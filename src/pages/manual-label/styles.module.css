@@ -1,0 +1,4 @@
+@import '../auto-label/styles.module.css';
+
+/* Inherit the same layout for consistency. If customization is needed later,
+   add overrides here without affecting Auto Labeling screen. */

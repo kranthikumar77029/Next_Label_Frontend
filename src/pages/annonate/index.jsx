@@ -1,9 +1,16 @@
 import { Button } from '@/components/button';
 import { Layout } from '@/components/layout';
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import styles from './styles.module.css';
+import { getMousePos as getMousePosUtil, getResizeHandle as getResizeHandleUtil } from '@/utils/annotation';
 
 const Annotate = () => {
+  const [searchParams] = useSearchParams();
+  const projectId = searchParams.get('projectId');
+  const batchId = searchParams.get('batchId');
+  const total = Number(searchParams.get('total')) || null;
+  const done = Number(searchParams.get('done')) || null;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [editMode, setEditMode] = useState(false);
   const [drawMode, setDrawMode] = useState(false);
@@ -163,32 +170,9 @@ const Annotate = () => {
     }
   };
 
-  const getMousePos = (e) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    return {
-      x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY,
-    };
-  };
+  const getMousePos = (e) => getMousePosUtil(canvasRef.current, e);
 
-  const getResizeHandle = (x, y, box) => {
-    const handles = [
-      { x: box.x, y: box.y, corner: 'tl' },
-      { x: box.x + box.width, y: box.y, corner: 'tr' },
-      { x: box.x, y: box.y + box.height, corner: 'bl' },
-      { x: box.x + box.width, y: box.y + box.height, corner: 'br' },
-    ];
-
-    for (const handle of handles) {
-      if (Math.abs(x - handle.x) < 10 && Math.abs(y - handle.y) < 10) {
-        return handle.corner;
-      }
-    }
-    return null;
-  };
+  const getResizeHandle = (x, y, box) => getResizeHandleUtil(x, y, box);
 
   const handleMouseDown = (e) => {
     if (!imageLoaded) return;
@@ -522,6 +506,59 @@ const Annotate = () => {
       pageTitle="Annotation Viewer"
       headerActions={
         <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
+          {(projectId || batchId) && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--spacing-sm)',
+                marginRight: 'var(--spacing-md)',
+              }}
+            >
+              {projectId && (
+                <span
+                  style={{
+                    background: 'var(--color-background-tertiary)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '2px 8px',
+                    fontSize: '12px',
+                    color: 'var(--color-text-secondary)',
+                  }}
+                >
+                  Project: {projectId}
+                </span>
+              )}
+              {batchId && (
+                <span
+                  style={{
+                    background: 'var(--color-background-tertiary)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '2px 8px',
+                    fontSize: '12px',
+                    color: 'var(--color-text-secondary)',
+                  }}
+                >
+                  Batch: {batchId}
+                </span>
+              )}
+              {total && done !== null && (
+                <span
+                  style={{
+                    background: 'var(--color-primary-light)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '2px 8px',
+                    fontSize: '12px',
+                    color: 'var(--color-primary)',
+                    border: '1px solid var(--color-primary)',
+                  }}
+                >
+                  Progress: {done} / {total}
+                </span>
+              )}
+            </div>
+          )}
           <Button
             variant={drawMode ? 'primary' : 'secondary'}
             icon="fi-rr-pencil"

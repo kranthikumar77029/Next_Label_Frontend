@@ -10,6 +10,11 @@ const ProjectsHub = lazy(() => import("../pages/projects-hub/index.jsx"));
 const Upload = lazy(() => import("../pages/upload/index.jsx"));
 const AutoLabel = lazy(() => import("../pages/auto-label/index.jsx"));
 const Annotate = lazy(() => import("../pages/annonate/index.jsx"));
+const ManualLabel = lazy(() => import("../pages/manual-label/index.jsx"));
+const TeamDashboard = lazy(() => import("../pages/team/index.jsx"));
+const TeamLabel = lazy(() => import("../pages/team-label/index.jsx"));
+const Review = lazy(() => import("../pages/review/index.jsx"));
+const Activity = lazy(() => import("../pages/activity/index.jsx"));
 const Classes = lazy(() => import("../pages/classes/index.jsx"));
 const Export = lazy(() => import("../pages/export/index.jsx"));
 const NotFound = lazy(() => import("../pages/not-found/index.jsx"));
@@ -64,6 +69,81 @@ export const routes = [
       <ProtectedRoute>
         <SuspenseWrapper>
           <AutoLabel />
+        </SuspenseWrapper>
+      </ProtectedRoute>
+    ),
+    errorElement: (
+      <SuspenseWrapper>
+        <NotFound />
+      </SuspenseWrapper>
+    ),
+  },
+  {
+    path: ROUTES.MANUAL_LABEL,
+    element: (
+      <ProtectedRoute>
+        <SuspenseWrapper>
+          <ManualLabel />
+        </SuspenseWrapper>
+      </ProtectedRoute>
+    ),
+    errorElement: (
+      <SuspenseWrapper>
+        <NotFound />
+      </SuspenseWrapper>
+    ),
+  },
+  {
+    path: ROUTES.TEAM_DASHBOARD,
+    element: (
+      <ProtectedRoute>
+        <SuspenseWrapper>
+          <TeamDashboard />
+        </SuspenseWrapper>
+      </ProtectedRoute>
+    ),
+    errorElement: (
+      <SuspenseWrapper>
+        <NotFound />
+      </SuspenseWrapper>
+    ),
+  },
+  {
+    path: ROUTES.TEAM_LABEL,
+    element: (
+      <ProtectedRoute>
+        <SuspenseWrapper>
+          <TeamLabel />
+        </SuspenseWrapper>
+      </ProtectedRoute>
+    ),
+    errorElement: (
+      <SuspenseWrapper>
+        <NotFound />
+      </SuspenseWrapper>
+    ),
+  },
+  {
+    path: ROUTES.REVIEW,
+    element: (
+      <ProtectedRoute>
+        <SuspenseWrapper>
+          <Review />
+        </SuspenseWrapper>
+      </ProtectedRoute>
+    ),
+    errorElement: (
+      <SuspenseWrapper>
+        <NotFound />
+      </SuspenseWrapper>
+    ),
+  },
+  {
+    path: ROUTES.ACTIVITY,
+    element: (
+      <ProtectedRoute>
+        <SuspenseWrapper>
+          <Activity />
         </SuspenseWrapper>
       </ProtectedRoute>
     ),

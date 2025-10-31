@@ -24,6 +24,28 @@ const Sidebar = () => {
       label: 'Auto Labeling Studio',
     },
     {
+      path: ROUTES.MANUAL_LABEL,
+      icon: 'fi-rr-edit',
+      label: 'Manual Annotation Studio',
+    },
+
+    {
+      path: ROUTES.TEAM_DASHBOARD,
+      icon: 'fi-rr-users',
+      label: 'Team Dashboard',
+    },
+    {
+      path: ROUTES.REVIEW,
+      icon: 'fi-rr-briefcase',
+      label: 'Reviewer Panel',
+    },
+    {
+      path: ROUTES.ACTIVITY,
+      icon: 'fi-rr-bell',
+      label: 'Activity Tracking',
+    },
+
+    {
       path: ROUTES.ANNOTATE,
       icon: 'fi-rr-picture',
       label: 'Annotation Viewer',
