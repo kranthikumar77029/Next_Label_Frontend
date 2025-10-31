@@ -1,23 +1,23 @@
-import { lazy } from "react";
-import { Navigate } from "react-router-dom";
-import { ProtectedRoute } from "../components/ProtectedRoute.jsx";
-import { SuspenseWrapper } from "./components.jsx";
-import { ROUTES } from "./constants.js";
+import { lazy } from 'react';
+import { Navigate } from 'react-router-dom';
+import { ProtectedRoute } from '../components/ProtectedRoute.jsx';
+import { SuspenseWrapper } from './components.jsx';
+import { ROUTES } from './constants.js';
 
 // Lazy load components for code splitting and better performance
-const Login = lazy(() => import("../pages/login/index.jsx"));
-const ProjectsHub = lazy(() => import("../pages/projects-hub/index.jsx"));
-const Upload = lazy(() => import("../pages/upload/index.jsx"));
-const AutoLabel = lazy(() => import("../pages/auto-label/index.jsx"));
-const Annotate = lazy(() => import("../pages/annonate/index.jsx"));
-const ManualLabel = lazy(() => import("../pages/manual-label/index.jsx"));
-const TeamDashboard = lazy(() => import("../pages/team/index.jsx"));
-const TeamLabel = lazy(() => import("../pages/team-label/index.jsx"));
-const Review = lazy(() => import("../pages/review/index.jsx"));
-const Activity = lazy(() => import("../pages/activity/index.jsx"));
-const Classes = lazy(() => import("../pages/classes/index.jsx"));
-const Export = lazy(() => import("../pages/export/index.jsx"));
-const NotFound = lazy(() => import("../pages/not-found/index.jsx"));
+const Login = lazy(() => import('../pages/login/index.jsx'));
+const ProjectsHub = lazy(() => import('../pages/projects-hub/index.jsx'));
+const Upload = lazy(() => import('../pages/upload/index.jsx'));
+const AutoLabel = lazy(() => import('../pages/auto-label/index.jsx'));
+const Annotate = lazy(() => import('../pages/annonate/index.jsx'));
+const ManualLabel = lazy(() => import('../pages/manual-label/index.jsx'));
+const TeamDashboard = lazy(() => import('../pages/team/index.jsx'));
+const TeamLabel = lazy(() => import('../pages/team-label/index.jsx'));
+const Review = lazy(() => import('../pages/review/index.jsx'));
+const Activity = lazy(() => import('../pages/activity/index.jsx'));
+const Classes = lazy(() => import('../pages/classes/index.jsx'));
+const Export = lazy(() => import('../pages/export/index.jsx'));
+const NotFound = lazy(() => import('../pages/not-found/index.jsx'));
 
 export const routes = [
   {
@@ -199,7 +199,7 @@ export const routes = [
     ),
   },
   {
-    path: "/404",
+    path: '/404',
     element: (
       <SuspenseWrapper>
         <NotFound />
@@ -207,7 +207,7 @@ export const routes = [
     ),
   },
   {
-    path: "*",
+    path: '*',
     element: <Navigate to="/404" replace />,
   },
 ];
