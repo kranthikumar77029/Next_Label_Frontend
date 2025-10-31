@@ -1,0 +1,184 @@
+.container {
+  max-width: 1600px;
+}
+
+.uploadZone {
+  background: var(--color-background-secondary);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+  transition: all var(--transition-base);
+  cursor: pointer;
+}
+
+.uploadZone:hover,
+.uploadZone.dragActive {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.uploadIcon {
+  font-size: 64px;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.uploadTitle {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.uploadText {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.uploadButtons {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  margin-top: var(--spacing-lg);
+}
+
+.progressBar {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  height: 8px;
+  overflow: hidden;
+  margin-top: var(--spacing-md);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--color-primary),
+    var(--color-primary-hover)
+  );
+  transition: width var(--transition-base);
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--color-background-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.toolbarLeft {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.searchInput {
+  width: 300px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.imageCard {
+  background: var(--color-background-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.imageCard:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.imageCard.selected {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+.checkbox {
+  position: absolute;
+  top: var(--spacing-sm);
+  left: var(--spacing-sm);
+  width: 20px;
+  height: 20px;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.imageWrapper {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imageInfo {
+  padding: var(--spacing-sm);
+}
+
+.imageName {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.imageSize {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  color: var(--color-text-tertiary);
+}
+
+.emptyIcon {
+  font-size: 64px;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-tertiary);
+}
+
+.emptyTitle {
+  font-size: var(--font-size-xl);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
