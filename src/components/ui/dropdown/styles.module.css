@@ -1,0 +1,82 @@
+.wrapper {
+  width: 100%;
+  margin-bottom: 16px;
+  position: relative; /* IMPORTANT */
+  z-index: 1;
+}
+
+
+.label {
+ color: #ffffff;
+}
+
+.required {
+  color: red;
+}
+
+.selectBox {
+  padding: 12px;
+  border: 1.2px solid #dcdcdc;
+  border-radius: 8px;
+
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: 0.2s;
+}
+
+.selectBox:hover {
+  border-color: #bdbdbd;
+}
+
+.placeholder {
+  color: #999;
+}
+
+.valueText {
+  color: #f0e3e3;
+  font-weight: 500;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+
+  background: #3d3f42;  
+  border: 1px solid #334155;
+  border-radius: 8px;
+
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+  z-index: 9999;
+
+  max-height: 220px;
+  overflow-y: auto;
+
+  margin-top: 6px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.option {
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.noOption {
+  padding: 12px;
+  text-align: center;
+  font-size: 14px;
+  color: #888;
+}
+
+.errorInput {
+  border-color: #e65252;
+}
+
+.errorText {
+  color: #e65252;
+  font-size: 13px;
+}

@@ -1,0 +1,21 @@
+.formGroup {
+  margin-bottom: var(--spacing-lg);
+}
+.label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+.sliderValue {
+  display: block;
+  text-align: right;
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.slider {
+ width: 100%;
+}

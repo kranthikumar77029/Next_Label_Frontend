@@ -1,7 +1,16 @@
 import { BrowserRouter, useRoutes } from "react-router-dom";
 import "@flaticon/flaticon-uicons/css/all/all.css";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { ProjectProvider } from "./context/ProjectContext.jsx";
+
+// root.render(
+//   <ProjectProvider>
+//     <App />
+//   </ProjectProvider>
+// );
+
 import { routes } from "./routes/index.jsx";
+ 
 
 /**
  * AppRoutes component using useRoutes hook (React Router v7)
@@ -19,11 +28,15 @@ const AppRoutes = () => {
  */
 function App() {
   return (
-    <AuthProvider>
+    
       <BrowserRouter>
+      <AuthProvider>
+        <ProjectProvider>
         <AppRoutes />
+        </ProjectProvider>
+        </AuthProvider>
       </BrowserRouter>
-    </AuthProvider>
+   
   );
 }
 

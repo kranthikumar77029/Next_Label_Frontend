@@ -1,0 +1,38 @@
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  width: fit-content;
+  display: inline-block;
+}
+
+/* Status styles */
+.auto-labeled {
+  background: #d6f8d6;
+  color: #0a2add;
+}
+
+.pending {
+  background: #fff3c4;
+  color: #b95238;
+}
+
+.in-progress {
+  background: #e2e1ff;
+  color: #c7ab0a;
+}
+.ready {
+  background: #e0f7ea;
+  color: #00d86c;
+}
+.processed {
+  background: #fdecea;
+  color: #3d05da;
+}
+
+.default {
+  background: #e0e0e0;
+  color: #555;
+}

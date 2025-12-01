@@ -1,5 +1,5 @@
-import { Button } from '@/components/button';
-import { Layout } from '@/components/layout';
+import { Button } from '@/components/ui/button';
+import { Layout } from '@/components/common/layout';
 import { ROUTES } from '@/routes/constants';
 import { useNavigate } from 'react-router-dom';
 import styles from './styles.module.css';

@@ -1,9 +1,12 @@
-import { Button } from '@/components/button';
-import { Layout } from '@/components/layout';
-import { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Layout } from '@/components/common/layout';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styles from './styles.module.css';
-import { getMousePos as getMousePosUtil, getResizeHandle as getResizeHandleUtil } from '@/utils/annotation';
+import {
+  getMousePos as getMousePosUtil,
+  getResizeHandle as getResizeHandleUtil,
+} from '@/utils/annotation';
 
 const Annotate = () => {
   const [searchParams] = useSearchParams();
@@ -24,8 +27,13 @@ const Annotate = () => {
   const [resizeHandle, setResizeHandle] = useState(null);
   const [ctrlPressed, setCtrlPressed] = useState(false);
 
+  // History for undo/redo
+  const [history, setHistory] = useState([]); // array of boundingBoxes snapshots
+  const [redoStack, setRedoStack] = useState([]);
+
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
+  const deleteButtonRef = useRef(null); // { index, x, y, size } or null
   const [imageLoaded, setImageLoaded] = useState(false);
 
   // Sample image - using a placeholder that will work
@@ -48,17 +56,82 @@ const Annotate = () => {
   const selectedClassData =
     classes.find((c) => c.name === selectedClass) || classes[0];
 
+  // -------------------------
+  // History helpers
+  // -------------------------
+  const pushSnapshot = useCallback(() => {
+    // push a deep-ish copy of current boundingBoxes to history and clear redo
+    setHistory((prev) => [...prev, boundingBoxes.map((b) => ({ ...b }))]);
+    setRedoStack([]);
+  }, [boundingBoxes]);
+
+  const undo = useCallback(() => {
+    setHistory((h) => {
+      if (h.length === 0) return h;
+      const previous = h[h.length - 1];
+      setRedoStack((r) => [boundingBoxes.map((b) => ({ ...b })), ...r]);
+      setBoundingBoxes(previous.map((b) => ({ ...b })));
+      // clear selection after undo
+      setSelectedBoxes(new Set());
+      setSelectedBox(null);
+      return h.slice(0, -1);
+    });
+  }, [boundingBoxes]);
+
+  const redo = useCallback(() => {
+    setRedoStack((r) => {
+      if (r.length === 0) return r;
+      const next = r[0];
+      setHistory((h) => [...h, boundingBoxes.map((b) => ({ ...b }))]);
+      setBoundingBoxes(next.map((b) => ({ ...b })));
+      // clear selection after redo
+      setSelectedBoxes(new Set());
+      setSelectedBox(null);
+      return r.slice(1);
+    });
+  }, [boundingBoxes]);
+
+  // -------------------------
+  // Effects: redraw when boxes or mode changes
+  // -------------------------
   useEffect(() => {
     if (imageLoaded) {
       drawCanvas();
     }
-  }, [boundingBoxes, imageLoaded, selectedBoxes, selectedBox, drawMode]);
+ 
+  }, [boundingBoxes, imageLoaded, selectedBoxes, selectedBox, drawMode, editMode]);
 
-  // Handle Ctrl key
+  // Handle Ctrl key pressed (for multi-select and draw)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Control' || e.key === 'Meta') {
         setCtrlPressed(true);
+      }
+
+      // Undo / Redo - unified keyboard handling
+      // Note: use e.ctrlKey to support Cmd on Mac (Meta sometimes)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        undo();
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        redo();
+      }
+
+      // Ctrl+Shift+Z -> redo (some systems)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'Z') {
+        e.preventDefault();
+        redo();
+      }
+
+      // Delete key handling
+      if (e.key === 'Delete' && editMode && (selectedBoxes.size > 0 || selectedBox !== null)) {
+        e.preventDefault();
+        // push snapshot then delete
+        pushSnapshot();
+        deleteSelectedBoxes();
       }
     };
 
@@ -75,8 +148,11 @@ const Annotate = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
+  }, [editMode, selectedBoxes, selectedBox, undo, redo, pushSnapshot]); // include deps
 
+  // -------------------------
+  // drawCanvas - renders image + boxes + delete button
+  // -------------------------
   const drawCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas || !imageLoaded) return;
@@ -92,6 +168,9 @@ const Annotate = () => {
 
     // Draw image
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    // Reset delete button
+    deleteButtonRef.current = null;
 
     // Draw bounding boxes
     boundingBoxes.forEach((box, index) => {
@@ -149,6 +228,35 @@ const Annotate = () => {
           ctx.fillRect(handle.x - 4, handle.y - 4, 8, 8);
         });
       }
+
+      // Draw delete button when a single box is selected (top-right)
+      if (isSelected && selectedBoxes.size <= 1 && editMode) {
+        const btnSize = 20;
+        const btnX = box.x + box.width + 8; // small offset
+        const btnY = box.y - btnSize - 8;
+
+        // Draw circular red button
+        ctx.beginPath();
+        ctx.fillStyle = '#ff4444';
+        ctx.arc(btnX + btnSize / 2, btnY + btnSize / 2, btnSize / 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw X
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 12px Inter';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('×', btnX + btnSize / 2, btnY + btnSize / 2);
+
+        // Expose delete button position for click detection
+        deleteButtonRef.current = {
+          index,
+          x: btnX,
+          y: btnY,
+          width: btnSize,
+          height: btnSize,
+        };
+      }
     });
 
     // Draw current drawing box
@@ -171,16 +279,35 @@ const Annotate = () => {
   };
 
   const getMousePos = (e) => getMousePosUtil(canvasRef.current, e);
-
   const getResizeHandle = (x, y, box) => getResizeHandleUtil(x, y, box);
 
+  // -------------------------
+  // Mouse handlers
+  // -------------------------
   const handleMouseDown = (e) => {
     if (!imageLoaded) return;
-
     const pos = getMousePos(e);
 
+    // If delete button is visible and clicked — handle it first
+    if (deleteButtonRef.current) {
+      const d = deleteButtonRef.current;
+      if (
+        pos.x >= d.x &&
+        pos.x <= d.x + d.width &&
+        pos.y >= d.y &&
+        pos.y <= d.y + d.height
+      ) {
+        // push snapshot then delete
+        pushSnapshot();
+        deleteSelectedBoxes();
+        drawCanvas();
+        return;
+      }
+    }
+
     if (drawMode) {
-      // In draw mode, always allow drawing (Ctrl makes it continuous)
+      // Start drawing — snapshot current state for undo
+      pushSnapshot();
       setIsDrawing(true);
       setDragStart({
         startX: pos.x,
@@ -198,6 +325,8 @@ const Annotate = () => {
         const box = boundingBoxes[selectedIndex];
         const handle = getResizeHandle(pos.x, pos.y, box);
         if (handle) {
+          // snapshot before user starts resizing
+          pushSnapshot();
           setResizeHandle(handle);
           setDragStart({
             startX: pos.x,
@@ -211,7 +340,7 @@ const Annotate = () => {
         }
       }
 
-      // Check if clicking on existing box
+      // Check if clicking on existing box (topmost first)
       for (let i = boundingBoxes.length - 1; i >= 0; i--) {
         const box = boundingBoxes[i];
         if (
@@ -220,6 +349,9 @@ const Annotate = () => {
           pos.y >= box.y &&
           pos.y <= box.y + box.height
         ) {
+          // snapshot before dragging
+          pushSnapshot();
+
           if (ctrlPressed) {
             // Multi-select: toggle selection
             const newSelected = new Set(selectedBoxes);
@@ -229,9 +361,7 @@ const Annotate = () => {
               newSelected.add(i);
             }
             setSelectedBoxes(newSelected);
-            setSelectedBox(
-              newSelected.size === 1 ? Array.from(newSelected)[0] : null
-            );
+            setSelectedBox(newSelected.size === 1 ? Array.from(newSelected)[0] : null);
 
             // Prepare for dragging if at least one is selected
             if (newSelected.size > 0) {
@@ -271,7 +401,6 @@ const Annotate = () => {
 
   const handleMouseMove = (e) => {
     if (!imageLoaded) return;
-
     const pos = getMousePos(e);
 
     if (isDrawing && dragStart) {
@@ -294,30 +423,18 @@ const Annotate = () => {
 
       switch (resizeHandle) {
         case 'tl':
-          newBox.x = Math.min(
-            dragStart.boxX + dragStart.boxWidth,
-            dragStart.boxX + deltaX
-          );
-          newBox.y = Math.min(
-            dragStart.boxY + dragStart.boxHeight,
-            dragStart.boxY + deltaY
-          );
+          newBox.x = Math.min(dragStart.boxX + dragStart.boxWidth, dragStart.boxX + deltaX);
+          newBox.y = Math.min(dragStart.boxY + dragStart.boxHeight, dragStart.boxY + deltaY);
           newBox.width = dragStart.boxWidth - deltaX;
           newBox.height = dragStart.boxHeight - deltaY;
           break;
         case 'tr':
-          newBox.y = Math.min(
-            dragStart.boxY + dragStart.boxHeight,
-            dragStart.boxY + deltaY
-          );
+          newBox.y = Math.min(dragStart.boxY + dragStart.boxHeight, dragStart.boxY + deltaY);
           newBox.width = dragStart.boxWidth + deltaX;
           newBox.height = dragStart.boxHeight - deltaY;
           break;
         case 'bl':
-          newBox.x = Math.min(
-            dragStart.boxX + dragStart.boxWidth,
-            dragStart.boxX + deltaX
-          );
+          newBox.x = Math.min(dragStart.boxX + dragStart.boxWidth, dragStart.boxX + deltaX);
           newBox.width = dragStart.boxWidth - deltaX;
           newBox.height = dragStart.boxHeight + deltaY;
           break;
@@ -363,14 +480,8 @@ const Annotate = () => {
         };
 
         // Keep box within canvas bounds
-        newBox.x = Math.max(
-          0,
-          Math.min(newBox.x, canvasRef.current.width - newBox.width)
-        );
-        newBox.y = Math.max(
-          0,
-          Math.min(newBox.y, canvasRef.current.height - newBox.height)
-        );
+        newBox.x = Math.max(0, Math.min(newBox.x, canvasRef.current.width - newBox.width));
+        newBox.y = Math.max(0, Math.min(newBox.y, canvasRef.current.height - newBox.height));
 
         updatedBoxes[index] = newBox;
       });
@@ -389,14 +500,8 @@ const Annotate = () => {
       };
 
       // Keep box within canvas bounds
-      newBox.x = Math.max(
-        0,
-        Math.min(newBox.x, canvasRef.current.width - newBox.width)
-      );
-      newBox.y = Math.max(
-        0,
-        Math.min(newBox.y, canvasRef.current.height - newBox.height)
-      );
+      newBox.x = Math.max(0, Math.min(newBox.x, canvasRef.current.width - newBox.width));
+      newBox.y = Math.max(0, Math.min(newBox.y, canvasRef.current.height - newBox.height));
 
       const updatedBoxes = [...boundingBoxes];
       updatedBoxes[selectedBox] = newBox;
@@ -425,7 +530,7 @@ const Annotate = () => {
           confidence: 95,
           id: Date.now(),
         };
-        setBoundingBoxes([...boundingBoxes, newBox]);
+        setBoundingBoxes((prev) => [...prev, newBox]);
 
         // If Ctrl is pressed, stay in draw mode; otherwise exit
         if (!ctrlPressed) {
@@ -448,28 +553,14 @@ const Annotate = () => {
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (
-      e.key === 'Delete' &&
-      (selectedBoxes.size > 0 || selectedBox !== null) &&
-      editMode
-    ) {
-      deleteSelectedBoxes();
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedBoxes, selectedBox, editMode]);
-
-  const deleteSelectedBoxes = () => {
+  // -------------------------
+  // Delete helpers
+  // -------------------------
+  const deleteSelectedBoxes = useCallback(() => {
     if (selectedBoxes.size > 0) {
       // Delete multiple boxes
       const indicesToDelete = Array.from(selectedBoxes);
-      const updatedBoxes = boundingBoxes.filter(
-        (_, i) => !indicesToDelete.includes(i)
-      );
+      const updatedBoxes = boundingBoxes.filter((_, i) => !indicesToDelete.includes(i));
       setBoundingBoxes(updatedBoxes);
       setSelectedBoxes(new Set());
       setSelectedBox(null);
@@ -479,7 +570,7 @@ const Annotate = () => {
       setBoundingBoxes(updatedBoxes);
       setSelectedBox(null);
     }
-  };
+  }, [boundingBoxes, selectedBoxes, selectedBox]);
 
   const handleDeleteClass = (className) => {
     setSelectedClass(className);
@@ -487,9 +578,8 @@ const Annotate = () => {
   };
 
   const confirmDeleteClass = () => {
-    setBoundingBoxes(
-      boundingBoxes.filter((box) => box.className !== selectedClass)
-    );
+    pushSnapshot();
+    setBoundingBoxes(boundingBoxes.filter((box) => box.className !== selectedClass));
     setShowDeleteClassModal(false);
     setSelectedClass(null);
   };
@@ -607,10 +697,7 @@ const Annotate = () => {
                   onClick={() => setSelectedClass(cls.name)}
                   style={{ borderLeftColor: cls.color }}
                 >
-                  <div
-                    className={styles.classColor}
-                    style={{ background: cls.color }}
-                  />
+                  <div className={styles.classColor} style={{ background: cls.color }} />
                   <span className={styles.className}>{cls.name}</span>
                   <span className={styles.classCount}>{cls.count}</span>
                   <button
@@ -640,9 +727,7 @@ const Annotate = () => {
             </div>
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Confidence:</span>
-              <span className={styles.infoValue}>
-                {currentImage.confidence}%
-              </span>
+              <span className={styles.infoValue}>{currentImage.confidence}%</span>
             </div>
           </div>
 
@@ -670,7 +755,10 @@ const Annotate = () => {
                 <strong>Resize:</strong> Drag corners (single box only)
               </p>
               <p className={styles.toolText}>
-                <strong>Delete:</strong> Press Delete key (works with multiple)
+                <strong>Delete:</strong> Press Delete key (works with multiple) or click the red × on a selected box
+              </p>
+              <p className={styles.toolText}>
+                <strong>Undo / Redo:</strong> Ctrl+Z / Ctrl+Y (or Ctrl+Shift+Z)
               </p>
             </div>
           </div>
@@ -678,16 +766,16 @@ const Annotate = () => {
           {selectedBoxes.size > 1 && (
             <div className={styles.sidebarSection}>
               <div className={styles.multiSelectInfo}>
-                <i
-                  className="fi fi-rr-check-circle"
-                  style={{ color: 'var(--color-primary)' }}
-                ></i>
+                <i className="fi fi-rr-check-circle" style={{ color: 'var(--color-primary)' }}></i>
                 <span>{selectedBoxes.size} boxes selected</span>
                 <Button
                   variant="danger"
                   size="small"
                   icon="fi-rr-trash"
-                  onClick={deleteSelectedBoxes}
+                  onClick={() => {
+                    pushSnapshot();
+                    deleteSelectedBoxes();
+                  }}
                   style={{ marginTop: 'var(--spacing-sm)' }}
                 >
                   Delete Selected
@@ -726,10 +814,7 @@ const Annotate = () => {
               />
               {!imageLoaded && (
                 <div className={styles.imageLoader}>
-                  <i
-                    className="fi fi-rr-picture"
-                    style={{ fontSize: '48px' }}
-                  ></i>
+                  <i className="fi fi-rr-picture" style={{ fontSize: '48px' }}></i>
                   <p>Loading image...</p>
                 </div>
               )}
@@ -753,9 +838,7 @@ const Annotate = () => {
             <Button
               variant="secondary"
               icon="fi-rr-angle-right"
-              onClick={() =>
-                setCurrentIndex(Math.min(images.length - 1, currentIndex + 1))
-              }
+              onClick={() => setCurrentIndex(Math.min(images.length - 1, currentIndex + 1))}
               disabled={currentIndex === images.length - 1}
             >
               Next
@@ -765,44 +848,24 @@ const Annotate = () => {
       </div>
 
       {showDeleteClassModal && (
-        <div
-          className={styles.modal}
-          onClick={() => setShowDeleteClassModal(false)}
-        >
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className={styles.modal} onClick={() => setShowDeleteClassModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>Delete Class</h2>
-              <button
-                className={styles.closeButton}
-                onClick={() => setShowDeleteClassModal(false)}
-              >
+              <button className={styles.closeButton} onClick={() => setShowDeleteClassModal(false)}>
                 <i className="fi fi-rr-cross"></i>
               </button>
             </div>
 
             <p className={styles.deleteMessage}>
-              Are you sure you want to delete the class{' '}
-              <strong>{selectedClass}</strong>? This will remove all annotations
-              with this class.
+              Are you sure you want to delete the class <strong>{selectedClass}</strong>? This will remove all annotations with this class.
             </p>
 
             <div className={styles.modalActions}>
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={() => setShowDeleteClassModal(false)}
-              >
+              <Button variant="secondary" type="button" onClick={() => setShowDeleteClassModal(false)}>
                 Cancel
               </Button>
-              <Button
-                variant="danger"
-                type="button"
-                onClick={confirmDeleteClass}
-                icon="fi-rr-trash"
-              >
+              <Button variant="danger" type="button" onClick={confirmDeleteClass} icon="fi-rr-trash">
                 Delete Class
               </Button>
             </div>

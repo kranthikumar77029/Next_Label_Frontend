@@ -1,7 +1,39 @@
-import { Button } from '@/components/button';
-import { Layout } from '@/components/layout';
+import { Button } from '@/components/ui/button';
+import { Layout } from '@/components/common/layout';
+import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import styles from './styles.module.css';
+
+const EXPORT_LOGS = [
+  '✓ Validating dataset structure...',
+  '✓ Processing 250 images...',
+  '✓ Generating annotations files...',
+  '✓ Splitting dataset (70/20/10)...',
+  '✓ Creating archive...',
+  '✓ Export completed successfully!',
+];
+
+// --------------------------------------------
+// Reusable Components
+// --------------------------------------------
+
+const SplitInput = ({ defaultValue, label }) => (
+  <div className={styles.splitInput}>
+    <Input type="number" min="0" max="100" defaultValue={defaultValue} />
+    <span className={styles.splitLabel}>{label}</span>
+  </div>
+);
+
+const Checkbox = ({ label, defaultChecked }) => (
+  <label className={styles.checkboxLabel}>
+    <input type="checkbox" defaultChecked={defaultChecked} />
+    <span>{label}</span>
+  </label>
+);
+
+// --------------------------------------------
+// Main Component
+// --------------------------------------------
 
 const Export = () => {
   const [exporting, setExporting] = useState(false);
@@ -11,31 +43,25 @@ const Export = () => {
     setExporting(true);
     setExportLog([]);
 
-    const logs = [
-      '✓ Validating dataset structure...',
-      '✓ Processing 250 images...',
-      '✓ Generating annotations files...',
-      '✓ Splitting dataset (70/20/10)...',
-      '✓ Creating archive...',
-      '✓ Export completed successfully!',
-    ];
-
-    logs.forEach((log, index) => {
+    EXPORT_LOGS.forEach((log, i) => {
       setTimeout(() => {
         setExportLog((prev) => [...prev, log]);
-        if (index === logs.length - 1) {
-          setTimeout(() => setExporting(false), 1000);
+        if (i === EXPORT_LOGS.length - 1) {
+          setTimeout(() => setExporting(false), 500);
         }
-      }, index * 800);
+      }, i * 800);
     });
   };
 
   return (
     <Layout pageTitle="Export Center">
       <div className={styles.container}>
+        
+        {/* LEFT PANEL */}
         <div className={styles.configPanel}>
           <h2 className={styles.sectionTitle}>Export Configuration</h2>
 
+          {/* Format */}
           <div className={styles.formGroup}>
             <label className={styles.label}>Export Format</label>
             <select className={styles.select}>
@@ -46,61 +72,25 @@ const Export = () => {
             </select>
           </div>
 
+          {/* Split Ratio */}
           <div className={styles.formGroup}>
             <label className={styles.label}>Dataset Split Ratio</label>
             <div className={styles.splitInputs}>
-              <div className={styles.splitInput}>
-                <input
-                  type="number"
-                  className={styles.input}
-                  defaultValue="70"
-                  min="0"
-                  max="100"
-                />
-                <span className={styles.splitLabel}>Train</span>
-              </div>
-              <div className={styles.splitInput}>
-                <input
-                  type="number"
-                  className={styles.input}
-                  defaultValue="20"
-                  min="0"
-                  max="100"
-                />
-                <span className={styles.splitLabel}>Validation</span>
-              </div>
-              <div className={styles.splitInput}>
-                <input
-                  type="number"
-                  className={styles.input}
-                  defaultValue="10"
-                  min="0"
-                  max="100"
-                />
-                <span className={styles.splitLabel}>Test</span>
-              </div>
+              <SplitInput label="Train" defaultValue={70} />
+              <SplitInput label="Validation" defaultValue={20} />
+              <SplitInput label="Test" defaultValue={10} />
             </div>
           </div>
 
+          {/* Checkboxes */}
           <div className={styles.checkboxGroup}>
-            <label className={styles.checkboxLabel}>
-              <input type="checkbox" defaultChecked />
-              <span>Include Annotations</span>
-            </label>
-            <label className={styles.checkboxLabel}>
-              <input type="checkbox" defaultChecked />
-              <span>Include Images</span>
-            </label>
-            <label className={styles.checkboxLabel}>
-              <input type="checkbox" defaultChecked />
-              <span>Include Class Labels File</span>
-            </label>
-            <label className={styles.checkboxLabel}>
-              <input type="checkbox" />
-              <span>Include Augmented Data</span>
-            </label>
+            <Checkbox label="Include Annotations" defaultChecked />
+            <Checkbox label="Include Images" defaultChecked />
+            <Checkbox label="Include Class Labels File" defaultChecked />
+            <Checkbox label="Include Augmented Data" />
           </div>
 
+          {/* Buttons */}
           <div className={styles.actions}>
             <Button
               variant="primary"
@@ -111,55 +101,43 @@ const Export = () => {
             >
               {exporting ? 'Exporting...' : 'Export as ZIP'}
             </Button>
-            <Button
-              variant="outline"
-              icon="fi-rr-rocket"
-              style={{ width: '100%' }}
-            >
+
+            <Button variant="outline" icon="fi-rr-rocket" style={{ width: '100%' }}>
               Send to Training Pipeline
             </Button>
           </div>
         </div>
 
+        {/* RIGHT PANEL */}
         <div className={styles.resultsPanel}>
           <h2 className={styles.sectionTitle}>Export Status</h2>
 
+          {/* Empty State */}
           {exportLog.length === 0 && !exporting && (
             <div className={styles.emptyState}>
-              <i
-                className="fi fi-rr-box-open"
-                style={{
-                  fontSize: '64px',
-                  color: 'var(--color-text-tertiary)',
-                }}
-              ></i>
-              <p
-                style={{
-                  color: 'var(--color-text-tertiary)',
-                  marginTop: 'var(--spacing-md)',
-                }}
-              >
-                No export in progress
-              </p>
+              <i className="fi fi-rr-box-open" style={{ fontSize: 64 }}></i>
+              <p>No export in progress</p>
             </div>
           )}
 
+          {/* Log Panel */}
           {(exportLog.length > 0 || exporting) && (
             <div className={styles.logPanel}>
-              {exportLog.map((log, index) => (
-                <div key={index} className={styles.logEntry}>
+              {exportLog.map((log, i) => (
+                <div key={i} className={styles.logEntry}>
                   {log}
                 </div>
               ))}
             </div>
           )}
 
+          {/* Download Section */}
           {!exporting && exportLog.length > 0 && (
             <div className={styles.downloadSection}>
               <div className={styles.downloadInfo}>
                 <i
                   className="fi fi-rr-file-zip"
-                  style={{ fontSize: '48px', color: 'var(--color-primary)' }}
+                  style={{ fontSize: 48, color: 'var(--color-primary)' }}
                 ></i>
                 <div>
                   <div className={styles.downloadTitle}>
@@ -174,6 +152,7 @@ const Export = () => {
             </div>
           )}
         </div>
+
       </div>
     </Layout>
   );

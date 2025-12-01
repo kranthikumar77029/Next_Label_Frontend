@@ -1,0 +1,48 @@
+.inputWrapper {
+  margin-bottom: 16px;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.labelIcon {
+  font-size: 18px;
+  margin-right: 8px;
+  opacity: 0.7;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.required {
+  color: red;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid white;
+  border-radius: 8px;
+  background-color: transparent;
+  color: white;
+}
+.input:focus {
+ outline: none;
+border-color: #007bff;
+}
+
+.errorInput {
+  border-color: red;
+}
+
+.errorText {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}

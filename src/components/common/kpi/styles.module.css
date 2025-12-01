@@ -1,0 +1,44 @@
+/* Container holding all KPI boxes in a row */
+.kpiWrapper {
+display: grid;
+grid-template-columns: repeat(3,auto);
+gap: 10px;
+}
+
+/* EACH item gets its own box */
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  background: var(--color-surface);
+  padding: 12px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  width: 180px;          
+  gap: 4px;
+}
+.kpiCard:hover{
+   border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+/* icon */
+.kpiIcon {
+  font-size: 22px;
+  opacity: 0.9;
+}
+
+/* number */
+.kpiValue {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* label */
+.kpiLabel {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}

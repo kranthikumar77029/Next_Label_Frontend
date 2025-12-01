@@ -1,4 +1,4 @@
-import { Sidebar } from "../sidebar/index.jsx";
+import { Sidebar } from "@/components/common/sidebar/index.jsx";
 import { ProjectSelector } from "../project-selector/index.jsx";
 import styles from "./styles.module.css";
 
@@ -7,6 +7,8 @@ const Layout = ({
   pageTitle,
   showProjectSelector = true,
   headerActions,
+  project,
+  onProjectChange
 }) => {
   return (
     <div className={styles.layout}>
@@ -15,14 +17,17 @@ const Layout = ({
         <header className={styles.header}>
           <div className={styles.headerLeft}>
             <h1 className={styles.pageTitle}>{pageTitle}</h1>
+
             {showProjectSelector && (
               <div className={styles.projectSelect}>
-                <ProjectSelector />
+                <ProjectSelector value={project} onChange={onProjectChange} />
               </div>
             )}
           </div>
+
           {headerActions}
         </header>
+
         <div className={styles.content}>{children}</div>
       </main>
     </div>

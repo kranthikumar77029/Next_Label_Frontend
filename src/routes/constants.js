@@ -15,6 +15,8 @@ export const ROUTES = {
   ACTIVITY: "/activity",
   CLASSES: "/classes",
   EXPORT: "/export",
+  FORGOTPASSWORD: "/forgot-password",
+  RESETPASSWORD: "/reset-password"
 };
 
 /**
@@ -25,6 +27,15 @@ export const ROUTE_CONFIG = {
     title: "Login",
     description: "Sign in to NexLabel Craft",
   },
+  [ROUTES.FORGOTPASSWORD]:{
+    title: "Forgot Password",
+    description:"Forgot password"
+  },
+  [ROUTES.RESETPASSWORD]:{
+    title: "Reset Password",
+    description:"Reset password"
+  },
+
   [ROUTES.HOME]: {
     title: "Projects Hub",
     description: "Manage and view all your annotation projects",

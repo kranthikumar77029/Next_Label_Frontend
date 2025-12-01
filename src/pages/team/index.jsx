@@ -1,5 +1,5 @@
-import { Button } from '@/components/button';
-import { Layout } from '@/components/layout';
+import { Button } from '@/components/ui/button';
+import { Layout } from '@/components/common/layout';
 import { useState } from 'react';
 import styles from './styles.module.css';
 

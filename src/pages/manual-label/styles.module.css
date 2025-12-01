@@ -1,4 +1,8 @@
-@import '../auto-label/styles.module.css';
-
-/* Inherit the same layout for consistency. If customization is needed later,
-   add overrides here without affecting Auto Labeling screen. */
+ .container {
+  max-width: 1200px;
+}
+.projectsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: var(--spacing-lg);
+}

@@ -1,0 +1,12 @@
+.inputWithIcon {
+  position: relative;
+}
+
+.eyeIcon {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}

@@ -1,11 +1,11 @@
 import { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
-import { ProtectedRoute } from '../components/ProtectedRoute.jsx';
+import { ProtectedRoute } from '../components/protected-route.jsx';
 import { SuspenseWrapper } from './components.jsx';
 import { ROUTES } from './constants.js';
 
 // Lazy load components for code splitting and better performance
-const Login = lazy(() => import('../pages/login/index.jsx'));
+const Login = lazy(() => import('../pages/auth/login/index.jsx'));
 const ProjectsHub = lazy(() => import('../pages/projects-hub/index.jsx'));
 const Upload = lazy(() => import('../pages/upload/index.jsx'));
 const AutoLabel = lazy(() => import('../pages/auto-label/index.jsx'));
@@ -18,13 +18,40 @@ const Activity = lazy(() => import('../pages/activity/index.jsx'));
 const Classes = lazy(() => import('../pages/classes/index.jsx'));
 const Export = lazy(() => import('../pages/export/index.jsx'));
 const NotFound = lazy(() => import('../pages/not-found/index.jsx'));
-
+const ForgotPassword = lazy(()=>import('../pages/auth/forgot/index.jsx'))
+const ResetPassword = lazy(()=>import('../pages/auth/reset/index.jsx'))
 export const routes = [
-  {
+   {
     path: ROUTES.LOGIN,
     element: (
       <SuspenseWrapper>
         <Login />
+      </SuspenseWrapper>
+    ),
+    errorElement: (
+      <SuspenseWrapper>
+        <NotFound />
+      </SuspenseWrapper>
+    ),
+  },
+  {
+    path: ROUTES.FORGOTPASSWORD,
+    element: (
+      <SuspenseWrapper>
+        <ForgotPassword />
+      </SuspenseWrapper>
+    ),
+    errorElement: (
+      <SuspenseWrapper>
+        <NotFound />
+      </SuspenseWrapper>
+    ),
+  },
+   {
+    path: ROUTES.RESETPASSWORD,
+    element: (
+      <SuspenseWrapper>
+        <ResetPassword />
       </SuspenseWrapper>
     ),
     errorElement: (

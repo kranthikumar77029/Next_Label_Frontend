@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext.jsx';
-import { snrLogo } from '../../resources/index.jsx';
-import { ROUTES } from '../../routes/constants.js';
-import { Button } from '../button/index.jsx';
+import { useAuth } from "@/context/AuthContext.jsx";
+import { snrLogo } from '@/resources/index.jsx';
+import { ROUTES } from '@/routes/constants.js';
+import { Button } from '@/components/ui/button/index.jsx';
 import styles from './styles.module.css';
 
 const Sidebar = () => {
@@ -70,7 +70,7 @@ const Sidebar = () => {
         <div className={styles.logoContainer}>
           <img src={snrLogo} alt="SNR Logo" className={styles.logoImage} />
           <div className={styles.logoTextContainer}>
-            <div className={styles.logoTitle}>NexLabel Craft</div>
+            <div className={styles.logoTitle}>SemiLabel Studio </div>
             <div className={styles.logoSubtitle}>
               Intelligent Annotation Platform
             </div>

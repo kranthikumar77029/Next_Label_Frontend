@@ -1,18 +1,32 @@
-import { Button } from '@/components/button';
-import { Layout } from '@/components/layout';
+import { useEffect } from "react";
+import { Layout } from '@/components/common/layout';
+import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { StatsCard } from '@/components/projects/stats-card';
+import { ProjectCard } from '@/components/projects/project-card';
+import { Modal } from '@/components/common/modal';
+import { Form } from '@/components/common/form';
+import {
+  createProjectApi,
+  updateProjectApi,
+  deleteProjectApi,
+  listProjectsApi,
+} from '@/networking/project_hub/projectapi';
 import styles from './styles.module.css';
 
 const ProjectsHub = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showModal, setShowModal] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    tags: '',
-  });
+  const [formData, setFormData] = useState({ project_title: '',description: '', tags: '' });
+
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('All');
+
+  const [projectList, setProjectList] = useState([]);
+
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  
 
   const stats = [
     { label: 'Total Projects', value: '12', icon: 'fi-rr-folder' },
@@ -21,75 +35,93 @@ const ProjectsHub = () => {
     { label: 'Models Trained', value: '8', icon: 'fi-rr-brain' },
   ];
 
-  const projects = [
-    {
-      id: 1,
-      title: 'Helmet Detection',
-      description:
-        'Detect safety helmets on construction workers for workplace safety compliance monitoring.',
-      date: '30 Oct 2025',
-      images: 250,
-      classes: 3,
-      status: 'Auto-Labeled',
-      accuracy: '94%',
-    },
-    {
-      id: 2,
-      title: 'Traffic Signs Classification',
-      description:
-        'Multi-class classification system for autonomous vehicle navigation and road sign recognition.',
-      date: '28 Oct 2025',
-      images: 180,
-      classes: 12,
-      status: 'In Progress',
-      accuracy: '87%',
-    },
-    {
-      id: 3,
-      title: 'Manufacturing Defect Detection',
-      description:
-        'Quality control system for identifying defects in manufacturing production lines.',
-      date: '25 Oct 2025',
-      images: 420,
-      classes: 5,
-      status: 'Auto-Labeled',
-      accuracy: '91%',
-    },
-  ];
+  const projects = projectList;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Creating project:', formData);
-    setShowModal(false);
-    setFormData({ title: '', description: '', tags: '' });
-  };
+  // 🔍 Filtering logic
+  const filteredProjects = projects.filter((p) => {
+    const matchesSearch = p.project_title.toLowerCase().includes(search.toLowerCase());
+    // const matchesFilter = filter === 'All' ? true : p.status.toLowerCase() === filter.toLowerCase();
+    return matchesSearch;
+  });
 
-  const handleEdit = (project) => {
-    setSelectedProject(project);
-    setFormData({
-      title: project.title,
-      description: project.description,
-      tags: '',
+
+useEffect(() => {
+  fetchProjects();
+}, [page, search]);
+
+const fetchProjects = async () => {
+  try {
+      const response = await listProjectsApi({
+      params: {
+        page,
+        query: search,
+        page_size: 10,
+      },
     });
-    setShowEditModal(true);
-  };
+    console.log("response",response)
+    setProjectList(response.data.results);  
+    setTotalPages(response.data.total_pages);
 
-  const handleEditSubmit = (e) => {
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+  // 🆕 Create Project
+  const handleCreate = async (e) => {
     e.preventDefault();
-    console.log('Updating project:', selectedProject.id, formData);
-    setShowEditModal(false);
+
+    try {
+      await createProjectApi(formData); // send form data to API
+      alert('Project created successfully!');
+      fetchProjects()
+    } catch (err) {
+      console.error(err);
+      alert('Failed to create project');
+    }
+
+    setShowModal(null);
+    setFormData({ project_title: '', description:'', tags: '' });
+  };
+
+  // 🆕 Edit Project
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!selectedProject) return;
+
+    try {
+      await updateProjectApi(selectedProject.id, formData); // send id + updated data
+      alert('Project updated successfully!');
+       setProjectList(prev =>
+      prev.map(p =>
+        p.id === selectedProject.id ? { ...p, ...formData } : p
+      )
+    );
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update project');
+    }
+
+    setShowModal(null);
     setSelectedProject(null);
-    setFormData({ title: '', description: '', tags: '' });
+    setFormData({ project_title: '', description: '', tags: '' });
   };
 
-  const handleDelete = (project) => {
-    setSelectedProject(project);
-    setShowDeleteModal(true);
-  };
+  // 🆕 Delete Project
+  const confirmDelete = async () => {
+    if (!selectedProject) return;
 
-  const confirmDelete = () => {
-    console.log('Deleting project:', selectedProject.id);
-    setShowDeleteModal(false);
+    try {
+      await deleteProjectApi({ project_id: selectedProject.id }); // delete by id
+      alert('Project deleted successfully!');
+       setProjectList(prev => prev.filter(p => p.id !== selectedProject.id));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete project');
+    }
+
+    setShowModal(null);
     setSelectedProject(null);
   };
 
@@ -98,303 +130,141 @@ const ProjectsHub = () => {
       pageTitle="Projects Hub"
       showProjectSelector={false}
       headerActions={
-        <Button icon="fi-rr-plus" onClick={() => setShowModal(true)}>
+        <Button icon="fi-rr-plus" onClick={() => setShowModal('create')}>
           Create New Project
         </Button>
       }
     >
       <div className={styles.container}>
-        <div className={styles.stats}>
-          {stats.map((stat, index) => (
-            <div key={index} className={styles.statCard}>
-              <div className={styles.statIcon}>
-                <i className={`fi ${stat.icon}`}></i>
-              </div>
-              <div className={styles.statContent}>
-                <div className={styles.statLabel}>{stat.label}</div>
-                <div className={styles.statValue}>{stat.value}</div>
-              </div>
-            </div>
-          ))}
+        {/* Stats */}
+        <StatsCard stats={stats} />
+
+        {/* 🔍 Search + Dropdown Filter */}
+        <div className={styles.topBar}>
+          {/* Search Box */}
+          <div className={styles.searchBox}>
+            <i className="fi-rr-search" />
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1);}}
+            />
+          </div>
+
+          {/* Dropdown Filter */}
+          <div className={styles.dropdown}>
+            <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+              <option value="All">All Projects</option>
+              <option value="Auto-Labeled">Auto-Labeled</option>
+              <option value="In-Progress">In-Progress</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
         </div>
 
+        {/* Projects Grid */}
         <div className={styles.projectsGrid}>
-          {projects.map((project) => (
-            <div key={project.id} className={styles.projectCard}>
-              <div className={styles.projectCardContent}>
-                <div className={styles.projectHeader}>
-                  <div className={styles.projectTitleSection}>
-                    <h3 className={styles.projectTitle}>{project.title}</h3>
-                    <div className={styles.projectDate}>
-                      <i
-                        className="fi fi-rr-calendar"
-                        style={{ fontSize: '11px', opacity: 0.7 }}
-                      ></i>
-                      <span>{project.date}</span>
-                    </div>
-                  </div>
-                  <span
-                    className={`${styles.statusBadge} ${
-                      project.status === 'Auto-Labeled'
-                        ? styles.active
-                        : styles.pending
-                    }`}
-                  >
-                    {project.status}
-                  </span>
-                </div>
-
-                <p className={styles.projectDescription}>
-                  {project.description}
-                </p>
-
-                <div className={styles.projectStats}>
-                  <div className={styles.projectStat}>
-                    <div className={styles.projectStatIconWrapper}>
-                      <i
-                        className={`fi fi-rr-picture ${styles.projectStatIcon}`}
-                      ></i>
-                    </div>
-                    <div className={styles.projectStatValue}>
-                      {project.images}
-                    </div>
-                    <div className={styles.projectStatLabel}>Images</div>
-                  </div>
-                  <div className={styles.projectStat}>
-                    <div className={styles.projectStatIconWrapper}>
-                      <i
-                        className={`fi fi-rr-palette ${styles.projectStatIcon}`}
-                      ></i>
-                    </div>
-                    <div className={styles.projectStatValue}>
-                      {project.classes}
-                    </div>
-                    <div className={styles.projectStatLabel}>Classes</div>
-                  </div>
-                  <div className={styles.projectStat}>
-                    <div className={styles.projectStatIconWrapper}>
-                      <i
-                        className={`fi fi-rr-check ${styles.projectStatIcon}`}
-                      ></i>
-                    </div>
-                    <div className={styles.projectStatValue}>
-                      {project.accuracy}
-                    </div>
-                    <div className={styles.projectStatLabel}>Accuracy</div>
-                  </div>
-                </div>
-
-                <div className={styles.projectActions}>
-                  <button
-                    className={styles.iconButton}
-                    onClick={() => handleEdit(project)}
-                    title="Edit"
-                  >
-                    <i className="fi fi-rr-edit"></i>
-                  </button>
-                  <button
-                    className={`${styles.iconButton} ${styles.deleteIcon}`}
-                    onClick={() => handleDelete(project)}
-                    title="Delete"
-                  >
-                    <i className="fi fi-rr-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
+          {filteredProjects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={{
+              id: project.id,
+              title: project.project_title,
+              description: project.description,
+              date: project.created_at,
+              tags: project.tags,
+              images: 0,
+             classes: 0,
+             status: "Pending",   
+             accuracy: "N/A"
+             }}
+              onEdit={(p) => {
+                setSelectedProject(p);
+                setFormData({ project_title: p.project_title, description: p.description, tags: p.tags });
+                setShowModal('edit');
+              }}
+              onDelete={(p) => {
+                setSelectedProject(p);
+                setShowModal('delete');
+              }}
+            />
           ))}
+
+          {/* Empty state */}
+          {filteredProjects.length === 0 && (
+            <div className={styles.emptyState}>
+              <img src="/empty-search.svg" alt="No results" />
+              <p>No matching projects found</p>
+            </div>
+          )}
         </div>
+        {/* Pagination */}
+{totalPages > 1 && (
+  <div className={styles.pagination}>
+    <Button
+      variant="secondary"
+      disabled={page === 1}
+      onClick={() => setPage(page - 1)}
+    >
+      Prev
+    </Button>
+
+    <span className={styles.pageInfo}>
+      Page {page} of {totalPages}
+    </span>
+
+    <Button
+      variant="secondary"
+      disabled={page === totalPages}
+      onClick={() => setPage(page + 1)}
+    >
+      Next
+    </Button>
+  </div>
+)}
+
       </div>
 
-      {showModal && (
-        <div className={styles.modal} onClick={() => setShowModal(false)}>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Create New Project</h2>
-              <button
-                className={styles.closeButton}
-                onClick={() => setShowModal(false)}
-              >
-                <i className="fi fi-rr-cross"></i>
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Project Title *</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="e.g., Vehicle Detection System"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Description *</label>
-                <textarea
-                  className={styles.textarea}
-                  placeholder="Describe your project goals and requirements..."
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Tags / Domain</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="e.g., Manufacturing, Safety, Automotive"
-                  value={formData.tags}
-                  onChange={(e) =>
-                    setFormData({ ...formData, tags: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className={styles.modalActions}>
-                <Button
-                  variant="secondary"
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                >
-                  Cancel
-                </Button>
-                <Button variant="primary" type="submit" icon="fi-rr-check">
-                  Create Project
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {/* Create Modal */}
+      {showModal === 'create' && (
+        <Modal title="Create New Project" onClose={() => setShowModal(null)}>
+          <Form
+            formData={formData}
+            setFormData={setFormData}
+            onSubmit={handleCreate}
+            onCancel={() => setShowModal(null)}
+            submitLabel="Create Project"
+          />
+        </Modal>
       )}
 
-      {showEditModal && (
-        <div className={styles.modal} onClick={() => setShowEditModal(false)}>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Edit Project</h2>
-              <button
-                className={styles.closeButton}
-                onClick={() => setShowEditModal(false)}
-              >
-                <i className="fi fi-rr-cross"></i>
-              </button>
-            </div>
-
-            <form onSubmit={handleEditSubmit}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Project Title *</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="e.g., Vehicle Detection System"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Description *</label>
-                <textarea
-                  className={styles.textarea}
-                  placeholder="Describe your project goals and requirements..."
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Tags / Domain</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="e.g., Manufacturing, Safety, Automotive"
-                  value={formData.tags}
-                  onChange={(e) =>
-                    setFormData({ ...formData, tags: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className={styles.modalActions}>
-                <Button
-                  variant="secondary"
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                >
-                  Cancel
-                </Button>
-                <Button variant="primary" type="submit" icon="fi-rr-check">
-                  Update Project
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {/* Edit Modal */}
+      {showModal === 'edit' && (
+        <Modal title="Edit Project" onClose={() => setShowModal(null)}>
+          <Form
+            formData={formData}
+            setFormData={setFormData}
+            onSubmit={handleEditSubmit}
+            onCancel={() => setShowModal(null)}
+            submitLabel="Update Project"
+          />
+        </Modal>
       )}
 
-      {showDeleteModal && (
-        <div className={styles.modal} onClick={() => setShowDeleteModal(false)}>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Delete Project</h2>
-              <button
-                className={styles.closeButton}
-                onClick={() => setShowDeleteModal(false)}
-              >
-                <i className="fi fi-rr-cross"></i>
-              </button>
-            </div>
-
-            <p className={styles.deleteMessage}>
-              Are you sure you want to delete{' '}
-              <strong>{selectedProject?.title}</strong>? This action cannot be
-              undone and will remove all associated data.
-            </p>
-
-            <div className={styles.modalActions}>
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={() => setShowDeleteModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="danger"
-                type="button"
-                onClick={confirmDelete}
-                icon="fi-rr-trash"
-              >
-                Delete Project
-              </Button>
-            </div>
+      {/* Delete Modal */}
+      {showModal === 'delete' && (
+        <Modal title="Delete Project" onClose={() => setShowModal(null)}>
+          <p className={styles.deleteMessage}>
+            Are you sure you want to delete <strong>{selectedProject?.title}</strong>?
+          </p>
+          <div className={styles.modalActions}>
+            <Button variant="secondary" onClick={() => setShowModal(null)}>Cancel</Button>
+            <Button variant="danger" icon="fi-rr-trash" onClick={confirmDelete}>
+              Delete Project
+            </Button>
           </div>
-        </div>
+        </Modal>
       )}
     </Layout>
   );

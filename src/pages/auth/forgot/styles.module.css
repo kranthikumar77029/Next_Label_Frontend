@@ -1,0 +1,32 @@
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth_otpContainer {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.auth_otpInput {
+  width: 40px;
+  height: 45px;
+  font-size: 20px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+}
+
+.auth_otpInput:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
+}
+
+.errorText {
+  color: red;
+  font-size: 12px;
+  text-align: center;
+}
