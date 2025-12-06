@@ -20,6 +20,9 @@ const Export = lazy(() => import('../pages/export/index.jsx'));
 const NotFound = lazy(() => import('../pages/not-found/index.jsx'));
 const ForgotPassword = lazy(()=>import('../pages/auth/forgot/index.jsx'))
 const ResetPassword = lazy(()=>import('../pages/auth/reset/index.jsx'))
+
+const ProjectImages = lazy(()=>import("@/pages/project-images"))
+
 export const routes = [
    {
     path: ROUTES.LOGIN,
@@ -93,148 +96,117 @@ export const routes = [
   {
     path: ROUTES.AUTO_LABEL,
     element: (
-      <ProtectedRoute>
         <SuspenseWrapper>
           <AutoLabel />
         </SuspenseWrapper>
-      </ProtectedRoute>
     ),
-    errorElement: (
-      <SuspenseWrapper>
-        <NotFound />
-      </SuspenseWrapper>
+  },
+   {
+    path: ROUTES.PROJECTIMAGES,
+    element: (
+        <SuspenseWrapper>
+          <ProjectImages />
+        </SuspenseWrapper>
     ),
   },
   {
     path: ROUTES.MANUAL_LABEL,
     element: (
-      <ProtectedRoute>
+   
         <SuspenseWrapper>
           <ManualLabel />
         </SuspenseWrapper>
-      </ProtectedRoute>
+      
     ),
-    errorElement: (
-      <SuspenseWrapper>
-        <NotFound />
-      </SuspenseWrapper>
-    ),
+    
   },
   {
     path: ROUTES.TEAM_DASHBOARD,
     element: (
-      <ProtectedRoute>
+     
         <SuspenseWrapper>
           <TeamDashboard />
         </SuspenseWrapper>
-      </ProtectedRoute>
+    
     ),
-    errorElement: (
-      <SuspenseWrapper>
-        <NotFound />
-      </SuspenseWrapper>
-    ),
+   
   },
   {
     path: ROUTES.TEAM_LABEL,
     element: (
-      <ProtectedRoute>
+    
         <SuspenseWrapper>
           <TeamLabel />
         </SuspenseWrapper>
-      </ProtectedRoute>
+    
     ),
-    errorElement: (
-      <SuspenseWrapper>
-        <NotFound />
-      </SuspenseWrapper>
-    ),
+  
   },
   {
     path: ROUTES.REVIEW,
     element: (
-      <ProtectedRoute>
+     
         <SuspenseWrapper>
           <Review />
         </SuspenseWrapper>
-      </ProtectedRoute>
+  
     ),
-    errorElement: (
-      <SuspenseWrapper>
-        <NotFound />
-      </SuspenseWrapper>
-    ),
+   
   },
   {
     path: ROUTES.ACTIVITY,
     element: (
-      <ProtectedRoute>
+    
         <SuspenseWrapper>
           <Activity />
         </SuspenseWrapper>
-      </ProtectedRoute>
+  
     ),
-    errorElement: (
-      <SuspenseWrapper>
-        <NotFound />
-      </SuspenseWrapper>
-    ),
+   
   },
   {
     path: ROUTES.ANNOTATE,
     element: (
-      <ProtectedRoute>
+    
         <SuspenseWrapper>
           <Annotate />
         </SuspenseWrapper>
-      </ProtectedRoute>
+    
     ),
-    errorElement: (
-      <SuspenseWrapper>
-        <NotFound />
-      </SuspenseWrapper>
-    ),
+  
   },
   {
     path: ROUTES.CLASSES,
     element: (
-      <ProtectedRoute>
+     
         <SuspenseWrapper>
           <Classes />
         </SuspenseWrapper>
-      </ProtectedRoute>
+  
     ),
-    errorElement: (
-      <SuspenseWrapper>
-        <NotFound />
-      </SuspenseWrapper>
-    ),
+   
   },
   {
     path: ROUTES.EXPORT,
     element: (
-      <ProtectedRoute>
+      
         <SuspenseWrapper>
           <Export />
         </SuspenseWrapper>
-      </ProtectedRoute>
+
     ),
-    errorElement: (
-      <SuspenseWrapper>
-        <NotFound />
-      </SuspenseWrapper>
-    ),
+  
   },
-  {
-    path: '/404',
-    element: (
-      <SuspenseWrapper>
-        <NotFound />
-      </SuspenseWrapper>
-    ),
-  },
-  {
-    path: '*',
-    element: <Navigate to="/404" replace />,
-  },
+  // {
+  //   path: '/404',
+  //   element: (
+  //     <SuspenseWrapper>
+  //       <NotFound />
+  //     </SuspenseWrapper>
+  //   ),
+  // },
+  // {
+  //   path: '*',
+  //   element: <Navigate to="/404" replace />,
+  // },
 ];

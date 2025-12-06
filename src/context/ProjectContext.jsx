@@ -6,6 +6,7 @@ const ProjectContext = createContext();
 export const ProjectProvider = ({ children }) => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const[selectedProject,setSelectedProject]=useState(null)
 
   // Fetch project list 
   useEffect(() => {
@@ -27,7 +28,7 @@ export const ProjectProvider = ({ children }) => {
   }, []);
 
   return (
-    <ProjectContext.Provider value={{ projects, loading }}>
+    <ProjectContext.Provider value={{ projects, loading ,selectedProject,setSelectedProject}}>
       {children}
     </ProjectContext.Provider>
   );

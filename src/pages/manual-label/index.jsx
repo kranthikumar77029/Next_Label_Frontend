@@ -2,28 +2,15 @@ import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/common/layout';
 import { ROUTES } from '@/routes/constants';
 import { useNavigate } from 'react-router-dom';
-import {LabelCard} from '@/components/common/label-card';   // ⬅ import your component
+import {LabelCard} from '@/components/common/label-card';  
+import { useProjects } from '@/context/ProjectContext'; 
 import styles from './styles.module.css';
 
 const ManualLabel = () => {
   const navigate = useNavigate();
+  const {projects} = useProjects();
 
-  const projects = [
-    {
-      id: 101,
-      title: 'Helmet Detection',
-      images: 250,
-      lastRun: 'Just now',
-      done: 30,
-    },
-    {
-      id: 102,
-      title: 'Traffic Signs',
-      images: 180,
-      lastRun: 'Yesterday',
-      done: 10,
-    },
-  ];
+  
 
   const handleOpenProject = (project) => {
     navigate(
@@ -48,17 +35,18 @@ const ManualLabel = () => {
       <div className={styles.container}>
         <div className={styles.projectsList}>
           {projects.map((project) => (
-            <LabelCard
-              key={project.id}
-              project={project}
-              images={project.images}
-              lastRun={project.lastRun}
-              done={project.done}
-              showStatus={false}
-              buttonIcon='fi-rr-edit'
-              buttonText='Run Manual Labeling'
-              onRun={() => handleOpenProject(project)}
-            />
+         <LabelCard
+          key={project.id}
+          project={project}
+          title={project.project_title}
+          description={project.description}
+          tags={project.tags}
+          date={project.created_at}
+          onRun={() => setShowModal(true)}
+          buttonText="Run Auto Labeling"
+          buttonIcon="fi-rr-magic-wand"
+          onPressLabelCard={()=>navigate(`/project-images/${project.project_title}/${project.id}`)}
+        />
           ))}
         </div>
       </div>

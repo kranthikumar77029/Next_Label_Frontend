@@ -3,23 +3,22 @@ import { Layout } from '@/components/common/layout';
 import { ROUTES } from '@/routes/constants';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useProjects } from '@/context/ProjectContext';
  
 import AutoLabelModal from '@/components/common/auto-label-modal';
 import { LabelCard } from '@/components/common/label-card';
 import styles from './styles.module.css';
 
 const AutoLabel = () => {
+  const {projects} = useProjects();
+  console.log("projectslist",projects);
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState([]);
 
-  const projects = [
-    { id: 1, title: 'Helmet Detection', images: 250, status: 'Ready', lastRun: 'Never' },
-    { id: 2, title: 'Traffic Signs', images: 180, status: 'Processed', lastRun: '2 hours ago' },
-  ];
-
+   
   // Handle progress simulation
   const runAutoLabel = () => {
     setProcessing(true);
@@ -43,6 +42,7 @@ const AutoLabel = () => {
       });
     }, 100);
   };
+  
 
   return (
     <Layout
@@ -54,14 +54,24 @@ const AutoLabel = () => {
       }
     >
       <div className={styles.container}>
-        <div className={styles.projectsList}>
-          {projects.map((p) => (
-            <LabelCard key={p.id} project={p} onRun={() => setShowModal(true)} 
-            buttonText='Run Auto Labeling'  buttonIcon='fi-rr-magic-wand'/>
-          ))}
-        </div>
+      <div className={styles.projectsList}>
+      {(projects || []).map((project) => (
+        <LabelCard
+          key={project.id}
+          project={project}
+          title={project.project_title}
+          description={project.description}
+          tags={project.tags}
+          date={project.created_at}
+          onRun={() => setShowModal(true)}
+          buttonText="Run Auto Labeling"
+          buttonIcon="fi-rr-magic-wand"
+          onPressLabelCard={()=>navigate(`/project-images/${project.project_title}/${project.id}`)}
+        />
+      ))}
+    </div>
 
-        {showModal && (
+     {showModal && (
           <AutoLabelModal
             onClose={() => !processing && setShowModal(false)}
             onStart={runAutoLabel}

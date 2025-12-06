@@ -1,18 +1,23 @@
 import { Sidebar } from "@/components/common/sidebar/index.jsx";
 import { ProjectSelector } from "../project-selector/index.jsx";
 import styles from "./styles.module.css";
+import { useProjects } from "@/context/ProjectContext.jsx";
 
 const Layout = ({
   children,
   pageTitle,
   showProjectSelector = true,
   headerActions,
-  project,
-  onProjectChange
 }) => {
+   
+  const { projects, selectedProject, setSelectedProject } = useProjects();
+  const selectedValue = selectedProject?.id || "";
+  console.log("selected projwect",selectedValue)
+;
   return (
     <div className={styles.layout}>
       <Sidebar />
+
       <main className={styles.main}>
         <header className={styles.header}>
           <div className={styles.headerLeft}>
@@ -20,7 +25,11 @@ const Layout = ({
 
             {showProjectSelector && (
               <div className={styles.projectSelect}>
-                <ProjectSelector value={project} onChange={onProjectChange} />
+                <ProjectSelector
+                  projects={projects}
+                  value={selectedProject}
+                  onChange={setSelectedProject}
+                />
               </div>
             )}
           </div>

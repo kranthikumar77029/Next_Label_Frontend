@@ -61,6 +61,7 @@ const fetchProjects = async () => {
     console.log("response",response)
     setProjectList(response.data.results);  
     setTotalPages(response.data.total_pages);
+    console.log("projectsList",projectList);
 
   } catch (err) {
     console.error(err);
@@ -200,29 +201,29 @@ const fetchProjects = async () => {
           )}
         </div>
         {/* Pagination */}
-{totalPages > 1 && (
-  <div className={styles.pagination}>
-    <Button
-      variant="secondary"
-      disabled={page === 1}
-      onClick={() => setPage(page - 1)}
-    >
-      Prev
-    </Button>
+        {totalPages > 1 && (
+          <div className={styles.pagination}>
+            <Button
+              variant="secondary"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
+              Prev
+            </Button>
 
-    <span className={styles.pageInfo}>
-      Page {page} of {totalPages}
-    </span>
+            <span className={styles.pageInfo}>
+              Page {page} of {totalPages}
+            </span>
 
-    <Button
-      variant="secondary"
-      disabled={page === totalPages}
-      onClick={() => setPage(page + 1)}
-    >
-      Next
-    </Button>
-  </div>
-)}
+            <Button
+              variant="secondary"
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        )}
 
       </div>
 

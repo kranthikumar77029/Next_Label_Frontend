@@ -1,37 +1,29 @@
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "@/components/ui/status-badge";
 import styles from "./styles.module.css";
 
-const LabelCard = ({ 
+const LabelCard = ({
   project,
-  onRun,  
-  showStatus = true,
-  buttonText = " ",
-  buttonIcon=" " 
-   }) => {
+  onRun,
+  buttonText = "Run Auto Labeling",
+  buttonIcon = "fi-rr-magic-wand",
+  onPressLabelCard=()=>{}
+}) => {
   return (
-    <div className={styles.projectCard}>
+    <div className={styles.projectCard} onClick={onPressLabelCard}>
       <div className={styles.projectHeader}>
         <div>
-          <h3 className={styles.projectTitle}>{project.title}</h3>
-
-          <div className={styles.projectMeta}>
-            <span>
-              <i className="fi fi-rr-picture"></i> {project.images} images
+          <h3 className={styles.projectTitle}>{project.project_title}</h3>
+           <p className={styles.description}>{project.description}</p>
+           <div className={styles.projectMeta}>
+             <span>
+              <i className="fi fi-rr-tags"></i> {project.tags}
             </span>
-
-            <span>
-              <i className="fi fi-rr-clock"></i> {project.lastRun}
+             <span>
+              <i className="fi fi-rr-clock"></i>{" "}
+              {new Date(project.created_at).toLocaleString()}
             </span>
           </div>
         </div>
-
-        {showStatus && (
-          <StatusBadge
-            text={project.status}
-            status={project.status?.toLowerCase().trim()}
-          />
-        )}
       </div>
 
       <Button

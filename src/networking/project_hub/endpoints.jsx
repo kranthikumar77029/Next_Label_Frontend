@@ -6,4 +6,3 @@ export const updateProject='projects/update'
 
 export const listProject='projects/list'
 
-export const uploadImages='upload/upload-images'

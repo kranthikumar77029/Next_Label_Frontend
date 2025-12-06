@@ -1,3 +1,5 @@
+import ProjectImages from "@/pages/project-images";
+
 /**
  * Route constants for the application
  * Centralized route paths for maintainability
@@ -16,8 +18,10 @@ export const ROUTES = {
   CLASSES: "/classes",
   EXPORT: "/export",
   FORGOTPASSWORD: "/forgot-password",
-  RESETPASSWORD: "/reset-password"
-};
+  RESETPASSWORD: "/reset-password",
+  PROJECTIMAGES: "/project-images/:selectedProject/:projectId",
+
+}; 
 
 /**
  * Route configuration metadata
@@ -80,4 +84,8 @@ export const ROUTE_CONFIG = {
     title: "Export Center",
     description: "Export your labeled data",
   },
+  [ROUTES.PROJECTIMAGES]:{
+    title:"Project Images",
+    description:"Project images"
+  }
 };
