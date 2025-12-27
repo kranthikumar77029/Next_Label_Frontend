@@ -13,9 +13,29 @@
   text-align: right;
   margin-top: var(--spacing-xs);
   font-size: var(--font-size-sm);
-  color: var(--color-primary);
+  color: #25ebcd;
   font-weight: 600;
 }
 .slider {
- width: 100%;
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+
+  /* THIS is the magic */
+  accent-color: #25ebcd;
+
+  /* subtle polish */
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+
+.modalActions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
 }

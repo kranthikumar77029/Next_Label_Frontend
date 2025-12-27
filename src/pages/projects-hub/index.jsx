@@ -6,6 +6,9 @@ import { StatsCard } from '@/components/projects/stats-card';
 import { ProjectCard } from '@/components/projects/project-card';
 import { Modal } from '@/components/common/modal';
 import { Form } from '@/components/common/form';
+import { useToast } from "@/hooks/use-toast";
+import NoDataFound from "@/assets/no-data-found.svg";
+
 import {
   createProjectApi,
   updateProjectApi,
@@ -18,21 +21,18 @@ const ProjectsHub = () => {
   const [showModal, setShowModal] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
   const [formData, setFormData] = useState({ project_title: '',description: '', tags: '' });
-
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
-
   const [projectList, setProjectList] = useState([]);
-
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
-
+  const [totalProjects, setTotalProjects] = useState(0);
+  const { showSuccess, showError } = useToast();
   const stats = [
-    { label: 'Total Projects', value: '12', icon: 'fi-rr-folder' },
+    { label: 'Total Projects', value: totalProjects, icon: 'fi-rr-folder' },
     { label: 'Images Labeled', value: '3,547', icon: 'fi-rr-picture' },
-    { label: 'Active Projects', value: '5', icon: 'fi-rr-chart-line-up' },
-    { label: 'Models Trained', value: '8', icon: 'fi-rr-brain' },
+    { label: 'Active Projects', value: '3', icon: 'fi-rr-chart-line-up' },
+    // { label: 'Models Trained', value: '8', icon: 'fi-rr-brain' },
   ];
 
   const projects = projectList;
@@ -40,8 +40,12 @@ const ProjectsHub = () => {
   // 🔍 Filtering logic
   const filteredProjects = projects.filter((p) => {
     const matchesSearch = p.project_title.toLowerCase().includes(search.toLowerCase());
-    // const matchesFilter = filter === 'All' ? true : p.status.toLowerCase() === filter.toLowerCase();
-    return matchesSearch;
+  
+  const matchesFilter =
+    filter === "All"
+      ? true
+      : (p.status || "").toLowerCase() === (filter || "").toLowerCase();
+    return matchesSearch,matchesFilter;
   });
 
 
@@ -51,39 +55,50 @@ useEffect(() => {
 
 const fetchProjects = async () => {
   try {
-      const response = await listProjectsApi({
+    const response = await listProjectsApi({
       params: {
         page,
         query: search,
         page_size: 10,
       },
     });
-    console.log("response",response)
-    setProjectList(response.data.results);  
+
+    const projects = response.data.results || [];
+
+    setProjectList(projects);
     setTotalPages(response.data.total_pages);
-    console.log("projectsList",projectList);
+
+    // ✅ Total projects count
+    setTotalProjects(response.data.total_count ?? projects.length);
 
   } catch (err) {
-    console.error(err);
+     showError(
+      err?.response?.data?.message || "Failed to create project"
+    );
   }
 };
 
+
   // 🆕 Create Project
-  const handleCreate = async (e) => {
-    e.preventDefault();
+ const handleCreate = async (e) => {
+  e.preventDefault();
 
-    try {
-      await createProjectApi(formData); // send form data to API
-      alert('Project created successfully!');
-      fetchProjects()
-    } catch (err) {
-      console.error(err);
-      alert('Failed to create project');
-    }
+  try {
+    await createProjectApi(formData);
 
+    showSuccess("Project created successfully");
+
+    fetchProjects();
     setShowModal(null);
-    setFormData({ project_title: '', description:'', tags: '' });
-  };
+    setFormData({ project_title: "", description: "", tags: "" });
+
+  } catch (err) {
+    showError(
+      err?.response?.data?.message || "Failed to create project"
+    );
+  }
+};
+
 
   // 🆕 Edit Project
   const handleEditSubmit = async (e) => {
@@ -93,15 +108,16 @@ const fetchProjects = async () => {
 
     try {
       await updateProjectApi(selectedProject.id, formData); // send id + updated data
-      alert('Project updated successfully!');
+       showSuccess("Project updated successfully");
        setProjectList(prev =>
       prev.map(p =>
         p.id === selectedProject.id ? { ...p, ...formData } : p
       )
     );
     } catch (err) {
-      console.error(err);
-      alert('Failed to update project');
+      showError(
+      err?.response?.data?.message || "Failed to update project"
+    );
     }
 
     setShowModal(null);
@@ -115,11 +131,12 @@ const fetchProjects = async () => {
 
     try {
       await deleteProjectApi({ project_id: selectedProject.id }); // delete by id
-      alert('Project deleted successfully!');
-       setProjectList(prev => prev.filter(p => p.id !== selectedProject.id));
+      showSuccess("project deleted successfully")
+      setProjectList(prev => prev.filter(p => p.id !== selectedProject.id));
     } catch (err) {
-      console.error(err);
-      alert('Failed to delete project');
+      showError(
+      err?.response?.data?.message || "Failed to delete project"
+    );
     }
 
     setShowModal(null);
@@ -131,9 +148,20 @@ const fetchProjects = async () => {
       pageTitle="Projects Hub"
       showProjectSelector={false}
       headerActions={
-        <Button icon="fi-rr-plus" onClick={() => setShowModal('create')}>
-          Create New Project
-        </Button>
+           <Button
+              icon="fi-rr-plus"
+              onClick={() => {
+                setSelectedProject(null); // important
+                setFormData({
+                  project_title: "",
+                  description: "",
+                  tags: "",
+                });
+                setShowModal("create");
+              }}
+            >
+      Create New Project
+    </Button>
       }
     >
       <div className={styles.container}>
@@ -157,10 +185,9 @@ const fetchProjects = async () => {
           <div className={styles.dropdown}>
             <select value={filter} onChange={(e) => setFilter(e.target.value)}>
               <option value="All">All Projects</option>
-              <option value="Auto-Labeled">Auto-Labeled</option>
-              <option value="In-Progress">In-Progress</option>
-              <option value="Pending">Pending</option>
-            </select>
+              <option value="Active">Active</option>
+              <option value="In-active">In-active</option>
+             </select>
           </div>
         </div>
 
@@ -182,7 +209,7 @@ const fetchProjects = async () => {
              }}
               onEdit={(p) => {
                 setSelectedProject(p);
-                setFormData({ project_title: p.project_title, description: p.description, tags: p.tags });
+                setFormData({ project_title: p.title, description: p.description, tags: p.tags });
                 setShowModal('edit');
               }}
               onDelete={(p) => {
@@ -195,14 +222,14 @@ const fetchProjects = async () => {
           {/* Empty state */}
           {filteredProjects.length === 0 && (
             <div className={styles.emptyState}>
-              <img src="/empty-search.svg" alt="No results" />
-              <p>No matching projects found</p>
+              <img src={NoDataFound} alt="No results" className={styles.emptyStateimg}/>
+              <p>No  projects found</p>
             </div>
           )}
         </div>
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className={styles.pagination}>
+         <div className={styles.pagination}>
             <Button
               variant="secondary"
               disabled={page === 1}

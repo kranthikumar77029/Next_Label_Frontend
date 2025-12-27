@@ -4,13 +4,14 @@ import { Button } from '../../components/ui/button';
 import { Layout } from '../../components/common/layout';
 import { ROUTES } from '../../routes/constants';
 import { uploadImagesApi } from '@/networking/upload/uploadapi';
+import { useToast } from "@/hooks/use-toast";
 import styles from './styles.module.css';
 import { useProjects } from '@/context/ProjectContext';
 
 const Upload = () => {
   const navigate = useNavigate();
   const { projects, selectedProject, setSelectedProject } = useProjects();
-
+  const { showSuccess, showError,showInfo} = useToast();
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -171,12 +172,12 @@ const Upload = () => {
   // =================================================================================
   const uploadToBackend = async () => {
     if (!selectedProject?.project_title || !selectedProject?.id) {
-      alert("Please select a project");
+      showInfo("Please select a project to Upload Images");
       return;
     }
 
     if (selectedImages.length === 0) {
-      alert("No NEW images selected");
+      showError("No NEW images selected");
       return;
     }
 
@@ -194,13 +195,14 @@ const Upload = () => {
       const res = await uploadImagesApi(formData);
       console.log("Upload success:", res.data);
 
-      alert("Images uploaded successfully!");
+      showSuccess("Images uploaded successfully!");
 
       
       clearImages();
     } catch (err) {
-      console.error("Upload error:", err.response?.data || err);
-      alert("Upload failed!");
+      showError(
+      err?.response?.data?.message || "Upload failed!"
+    );
     } finally {
       setBackendUploading(false);
     }
@@ -215,15 +217,15 @@ const Upload = () => {
       pageTitle="Upload & Manage Data"
       projects={projects}
       onProjectChange={(project) => setSelectedProject(project)}
-      headerActions={
-        <Button
-          icon="fi-rr-arrow-right"
-          disabled={!images.length}
-          onClick={() => navigate(ROUTES.AUTO_LABEL)}
-        >
-          Next: Auto Labeling
-        </Button>
-      }
+      // headerActions={
+      //   <Button
+      //     icon="fi-rr-arrow-right"
+      //     disabled={!images.length}
+      //     onClick={() => navigate(ROUTES.AUTO_LABEL)}
+      //   >
+      //     Next: Auto Labeling
+      //   </Button>
+      // }
     >
       <div className={styles.container}>
 

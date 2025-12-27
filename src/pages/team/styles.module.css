@@ -21,13 +21,15 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  
   gap: var(--spacing-md);
   padding: var(--spacing-md);
 }
 
 .selectBox {
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .label {

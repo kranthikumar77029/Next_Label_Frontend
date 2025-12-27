@@ -8,6 +8,7 @@ const Layout = ({
   pageTitle,
   showProjectSelector = true,
   headerActions,
+  searchBox,
 }) => {
    
   const { projects, selectedProject, setSelectedProject } = useProjects();
@@ -35,6 +36,7 @@ const Layout = ({
           </div>
 
           {headerActions}
+          {searchBox}
         </header>
 
         <div className={styles.content}>{children}</div>

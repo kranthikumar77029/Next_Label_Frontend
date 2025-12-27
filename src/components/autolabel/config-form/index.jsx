@@ -9,7 +9,8 @@ import styles from "./styles.module.css";
 const ConfigForm = ({ onCancel, onStart }) => {
   const [modelType, setModelType] = useState("YOLOv8");
   const [classes, setClasses] = useState("helmet, person, vest");
-  const [confidence, setConfidence] = useState(70);
+  const [confidence, setConfidence] = useState(0);
+  const [iou_confidence, setIou_Confidence] = useState(0);
 
   return (
     <>
@@ -44,14 +45,36 @@ const ConfigForm = ({ onCancel, onStart }) => {
         <div className={styles.sliderWrapper}>
           <Input
             type="range"
-            min="0"
-            max="100"
+            min={0}
+            max={1}
+            step={0.01}
             value={confidence}
             onChange={(e) => setConfidence(e.target.value)}
             className={styles.slider}
           />
 
           <span className={styles.sliderValue}>{confidence}%</span>
+        </div>
+      </div>
+
+      <div className={styles.formGroup}>
+        <label className={styles.label}>IOU_threshold</label>
+
+        <div className={styles.sliderWrapper}>
+          <Input
+            type="range"
+            min={0}
+            max={1}
+            step={0.01}              // important
+            value={iou_confidence}
+            onChange={(e) =>
+              setIou_Confidence(Number(e.target.value))
+            }
+            className={styles.slider}
+          />
+
+
+          <span className={styles.sliderValue}>{iou_confidence}%</span>
         </div>
       </div>
 
@@ -64,13 +87,13 @@ const ConfigForm = ({ onCancel, onStart }) => {
         <Button
           variant="primary"
           icon="fi-rr-play"
-          onClick={() =>
-            onStart({
-              modelType,
-              classes,
-              confidence,
-            })
-          }
+          // onClick={() =>
+          //   onStart({
+          //     modelType,
+          //     classes,
+          //     confidence,
+          //   })
+          // }
           fullWidth
         >
           Start Processing

@@ -1,30 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/common/layout';
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
+import { Modal } from '@/components/common/modal';
+import { Form } from '@/components/common/form';
+import { useProjects } from '@/context/ProjectContext';
+import { createClassApi,listClassesApi,updateClassApi,deleteClassApi} from '@/networking/class-manager/classapi';
 import styles from './styles.module.css';
 
 const Classes = () => {
-  const [classes, setClasses] = useState([
-    {
-      id: 1,
-      name: 'Helmet',
-      color: '#ef4444',
-      description: 'Safety helmet worn by workers',
-    },
-    {
-      id: 2,
-      name: 'Person',
-      color: '#06b6d4',
-      description: 'Human detected in image',
-    },
-    {
-      id: 3,
-      name: 'Vest',
-      color: '#3b82f6',
-      description: 'Safety vest or high-visibility clothing',
-    },
-  ]);
-
+  const [classes, setClasses] = useState([])
+  const { projects, selectedProject, setSelectedProject } = useProjects();
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -33,63 +18,159 @@ const Classes = () => {
     name: '',
     color: '#06b6d4',
     description: '',
+    project: '',
   });
 
-  const colors = [
-    '#ef4444',
-    '#06b6d4',
-    '#3b82f6',
-    '#f59e0b',
-    '#8b5cf6',
-    '#06b6d4',
-    '#10b981',
-    '#f97316',
-  ];
+  
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setClasses([...classes, { id: Date.now(), ...formData }]);
-    setShowModal(false);
-    setFormData({ name: '', color: '#06b6d4', description: '' });
+  const payload = {
+    class_name: formData.name,
+    color: formData.color,
+    project_title: formData.project,
+    description: formData.description,
   };
 
-  const handleEdit = (cls) => {
+  console.log("Submitting payload:", payload);
+
+  try {
+    const response = await createClassApi(payload);
+    console.log("Class created successfully:", response.data);
+    fetchClasses(selectedProject);
+
+
+    // Reset form & close modal
+    setFormData({
+      name: "",
+      color: "#06b6d4",
+      description: "",
+      project: "",
+    });
+    setShowModal(false);
+
+  } catch (error) {
+    const message =
+      error?.response?.data?.detail ||
+      error?.message ||
+      "Something went wrong";
+
+    console.error("API Error:", message);
+  }
+};
+const fetchClasses = async (projectTitle) => {
+  console.log("fetching classes with",projectTitle);
+  if (!projectTitle) return;
+
+  try {
+    const response = await listClassesApi(projectTitle);
+
+    setClasses(
+      response.data.map((item) => ({
+        id: item.id,
+        name: item.class_name,
+        color: item.color,
+        project: item.project_title,
+        description: item.description,
+      }))
+    );
+  } catch (error) {
+    console.error(
+      error?.response?.data?.detail || error.message
+    );
+  }
+};
+
+useEffect(() => {
+  if (selectedProject?.project_title) {
+    fetchClasses(selectedProject.project_title);
+  }
+}, [selectedProject]);
+
+ const handleEdit = (cls) => {
     setSelectedClass(cls);
     setFormData({
       name: cls.name,
       color: cls.color,
       description: cls.description,
+      project: cls.project,
     });
     setShowEditModal(true);
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
+const handleEditSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!selectedClass) return;
+
+  try {
+    const updates = {
+      new_class_name: formData.name,
+      color: formData.color
+    };
+
+    const response = await updateClassApi({
+      id: selectedClass.id,
+      name:selectedClass.name,
+      updates
+    });
+
+    console.log("Class updated successfully:", response.data);
+
+    // Update local state/UI
     setClasses(
       classes.map((c) =>
-        c.id === selectedClass?.id ? { ...c, ...formData } : c
+        c.id === selectedClass.id ? { ...c, ...formData } : c
       )
     );
+
     setShowEditModal(false);
     setSelectedClass(null);
-    setFormData({ name: '', color: '#06b6d4', description: '' });
-  };
+    setFormData({ name: '', color: '#06b6d4', description: '', project: '' });
 
-  const handleDelete = (cls) => {
+  } catch (error) {
+    console.error("Failed to update class:", error?.response?.data || error.message);
+  }
+};
+
+const handleDelete = (cls) => {
     setSelectedClass(cls);
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    setClasses(classes.filter((c) => c.id !== selectedClass?.id));
+  const confirmDelete = async () => {
+  if (!selectedClass) return;
+
+  try {
+    await deleteClassApi({
+      id: selectedClass.id
+      // OR class_name: selectedClass.name
+    });
+
+    console.log("Class deleted successfully");
+
+  
+    setClasses((prev) =>
+      prev.filter((c) => c.id !== selectedClass.id)
+    );
+
     setShowDeleteModal(false);
     setSelectedClass(null);
-  };
+
+  } catch (error) {
+    console.error(
+      "Failed to delete class:",
+      error?.response?.data || error.message
+    );
+  }
+};
 
   return (
     <Layout
       pageTitle="Label Class Manager"
-      showProjectSelector={false}
+      projects={projects}
+      onProjectChange={(project) => setSelectedProject(project)}
+      // showProjectSelector={true}
       headerActions={
         <Button icon="fi-rr-plus" onClick={() => setShowModal(true)}>
           Add Class
@@ -97,254 +178,90 @@ const Classes = () => {
       }
     >
       <div className={styles.container}>
-        <div className={styles.table}>
-          <div className={styles.tableHeader}>
-            <div className={styles.tableCell}>Class Name</div>
-            <div className={styles.tableCell}>Color</div>
-            <div className={styles.tableCell}>Description</div>
-            <div className={styles.tableCell}>Actions</div>
-          </div>
+        <table className={styles.table}>
+          <thead>
+            <tr className={styles.tableHeader}>
+              <th className={styles.tableCell}>Class Name</th>
+              <th className={styles.tableCell}>Color</th>
+              <th className={styles.tableCell}>Project</th>
+              <th className={styles.tableCell}>Description</th>
+              <th className={styles.tableCell}>Actions</th>
+            </tr>
+          </thead>
 
-          {classes.map((cls) => (
-            <div key={cls.id} className={styles.tableRow}>
-              <div className={styles.tableCell}>
-                <div className={styles.classNameCell}>
-                  <div
-                    className={styles.colorDot}
-                    style={{ background: cls.color }}
-                  />
-                  <span className={styles.className}>{cls.name}</span>
-                </div>
-              </div>
-              <div className={styles.tableCell}>
-                <div
-                  className={styles.colorPreview}
-                  style={{ background: cls.color }}
-                >
-                  {cls.color}
-                </div>
-              </div>
-              <div className={styles.tableCell}>
-                <span className={styles.description}>{cls.description}</span>
-              </div>
-              <div className={styles.tableCell}>
-                <div className={styles.actions}>
-                  <button
-                    className={styles.actionButton}
-                    onClick={() => handleEdit(cls)}
-                  >
-                    <i className="fi fi-rr-edit"></i>
-                  </button>
-                  <button
-                    className={`${styles.actionButton} ${styles.delete}`}
-                    onClick={() => handleDelete(cls)}
-                  >
-                    <i className="fi fi-rr-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+          <tbody>
+            {classes.map((cls) => (
+              <tr key={cls.id} className={styles.tableRow}>
+                <td className={styles.tableCell}>
+                  <div className={styles.classNameCell}>
+                    <div className={styles.colorDot} style={{ background: cls.color }} />
+                    <span className={styles.className}>{cls.name}</span>
+                  </div>
+                </td>
+                <td className={styles.tableCell}>
+                  <div className={styles.colorPreview} style={{ background: cls.color }}>
+                    {cls.color}
+                  </div>
+                </td>
+                <td className={styles.tableCell}>
+                  <span className={styles.className}>{cls.project}</span>
+                </td>
+                <td className={styles.tableCell}>
+                  <span className={styles.description}>{cls.description}</span>
+                </td>
+                <td className={styles.tableCell}>
+                  <div className={styles.actions}>
+                    <button className={styles.actionButton} onClick={() => handleEdit(cls)}>
+                      <i className="fi fi-rr-edit"></i>
+                    </button>
+                    <button className={`${styles.actionButton} ${styles.delete}`} onClick={() => handleDelete(cls)}>
+                      <i className="fi fi-rr-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
         {showModal && (
-          <div className={styles.modal} onClick={() => setShowModal(false)}>
-            <div
-              className={styles.modalContent}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className={styles.modalHeader}>
-                <h2 className={styles.modalTitle}>Add New Class</h2>
-                <button
-                  className={styles.closeButton}
-                  onClick={() => setShowModal(false)}
-                >
-                  <i className="fi fi-rr-cross"></i>
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Class Name *</label>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    placeholder="e.g., Hard Hat"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Color *</label>
-                  <div className={styles.colorPicker}>
-                    {colors.map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        className={`${styles.colorOption} ${
-                          formData.color === color ? styles.selected : ''
-                        }`}
-                        style={{ background: color }}
-                        onClick={() => setFormData({ ...formData, color })}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Description</label>
-                  <textarea
-                    className={styles.textarea}
-                    placeholder="Describe what this class represents..."
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className={styles.modalActions}>
-                  <Button
-                    variant="secondary"
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button variant="primary" type="submit" icon="fi-rr-check">
-                    Add Class
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <Modal title="Add New Class" onClose={() => setShowModal(false)}>
+            <Form
+              mode="class"
+              formData={formData}
+              setFormData={setFormData}
+              submitLabel="Add Class"
+              onSubmit={handleSubmit}
+              onCancel={() => setShowModal(false)}
+            />
+          </Modal>
         )}
 
         {showEditModal && (
-          <div className={styles.modal} onClick={() => setShowEditModal(false)}>
-            <div
-              className={styles.modalContent}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className={styles.modalHeader}>
-                <h2 className={styles.modalTitle}>Edit Class</h2>
-                <button
-                  className={styles.closeButton}
-                  onClick={() => setShowEditModal(false)}
-                >
-                  <i className="fi fi-rr-cross"></i>
-                </button>
-              </div>
-
-              <form onSubmit={handleEditSubmit}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Class Name *</label>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    placeholder="e.g., Hard Hat"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Color *</label>
-                  <div className={styles.colorPicker}>
-                    {colors.map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        className={`${styles.colorOption} ${
-                          formData.color === color ? styles.selected : ''
-                        }`}
-                        style={{ background: color }}
-                        onClick={() => setFormData({ ...formData, color })}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Description</label>
-                  <textarea
-                    className={styles.textarea}
-                    placeholder="Describe what this class represents..."
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className={styles.modalActions}>
-                  <Button
-                    variant="secondary"
-                    type="button"
-                    onClick={() => setShowEditModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button variant="primary" type="submit" icon="fi-rr-check">
-                    Update Class
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <Modal title="Edit Class" onClose={() => setShowEditModal(false)}>
+            <Form
+              mode="class"
+              formData={formData}
+              setFormData={setFormData}
+              submitLabel="Update Class"
+              onSubmit={handleEditSubmit}
+              onCancel={() => setShowEditModal(false)}
+            />
+          </Modal>
         )}
 
         {showDeleteModal && (
-          <div
-            className={styles.modal}
-            onClick={() => setShowDeleteModal(false)}
-          >
-            <div
-              className={styles.modalContent}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className={styles.modalHeader}>
-                <h2 className={styles.modalTitle}>Delete Class</h2>
-                <button
-                  className={styles.closeButton}
-                  onClick={() => setShowDeleteModal(false)}
-                >
-                  <i className="fi fi-rr-cross"></i>
-                </button>
-              </div>
-
-              <p className={styles.deleteMessage}>
-                Are you sure you want to delete the class{' '}
-                <strong>{selectedClass?.name}</strong>? This will remove all
-                annotations with this class.
-              </p>
-
-              <div className={styles.modalActions}>
-                <Button
-                  variant="secondary"
-                  type="button"
-                  onClick={() => setShowDeleteModal(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="danger"
-                  type="button"
-                  onClick={confirmDelete}
-                  icon="fi-rr-trash"
-                >
-                  Delete Class
-                </Button>
-              </div>
+          <Modal title="Delete Project" onClose={() => setShowDeleteModal(false)}>
+            <p className={styles.deleteMessage}>
+              Are you sure you want to delete <strong>{selectedClass?.name}</strong>?
+            </p>
+            <div className={styles.modalActions}>
+              <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
+              <Button variant="danger" icon="fi-rr-trash" onClick={confirmDelete}>
+                Delete Project
+              </Button>
             </div>
-          </div>
+          </Modal>
         )}
       </div>
     </Layout>

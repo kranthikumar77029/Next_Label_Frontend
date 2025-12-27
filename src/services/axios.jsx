@@ -38,10 +38,14 @@ const imagesBaseURL = import.meta.env.VITE_IMAGES_API_BASE_URL;
 
 const projectsApi = createAxiosInstance(baseURL);
 const uploadAndManageImagesApi = createAxiosInstance(imagesBaseURL);
+const teamApi=createAxiosInstance(baseURL);
+const classApi=createAxiosInstance(baseURL);
 
  
 
 export {
   projectsApi,
   uploadAndManageImagesApi,
+  teamApi,
+  classApi
 };

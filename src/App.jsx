@@ -2,14 +2,9 @@ import { BrowserRouter, useRoutes } from "react-router-dom";
 import "@flaticon/flaticon-uicons/css/all/all.css";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { ProjectProvider } from "./context/ProjectContext.jsx";
-
-// root.render(
-//   <ProjectProvider>
-//     <App />
-//   </ProjectProvider>
-// );
-
 import { routes } from "./routes/index.jsx";
+import { ThemeProvider } from "./provideers/themeprovider.jsx";
+import { ToastContainer } from 'react-toastify';
  
 
 /**
@@ -21,18 +16,17 @@ const AppRoutes = () => {
   return element;
 };
 
-/**
- * App component - Main application wrapper
- * Uses BrowserRouter and useRoutes hook for modern routing
- * Wraps app with AuthProvider for authentication state management
- */
+ 
 function App() {
   return (
     
       <BrowserRouter>
+      <ToastContainer/>
       <AuthProvider>
         <ProjectProvider>
+          <ThemeProvider>
         <AppRoutes />
+        </ThemeProvider>
         </ProjectProvider>
         </AuthProvider>
       </BrowserRouter>

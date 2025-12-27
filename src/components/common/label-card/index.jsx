@@ -29,7 +29,10 @@ const LabelCard = ({
       <Button
         variant="primary"
         icon={buttonIcon}
-        onClick={onRun}
+        onClick={(e) => {
+            e.stopPropagation(); 
+            onRun();
+          }}
         fullWidth
       >
         {buttonText}

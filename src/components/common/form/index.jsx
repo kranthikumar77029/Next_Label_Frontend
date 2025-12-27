@@ -1,7 +1,10 @@
 import {Input} from "@/components/ui/input";
 import {TextArea} from "@/components/ui/text-area";
 import { Button } from "@/components/ui/button";
+import { ColorPalette } from "@/components/ui/color-palette";
+import { Dropdown } from "@/components/ui/dropdown";
 import { useState } from 'react';
+import { useProjects } from '@/context/ProjectContext';
 import styles from "./styles.module.css";
 
 // const Form = ({  onSubmit, onCancel, submitLabel }) => {
@@ -10,78 +13,187 @@ import styles from "./styles.module.css";
 //     description: "",
 //     tags: "",
 //   });
-const Form = ({ formData, setFormData, onSubmit, onCancel, submitLabel }) => {
+const Form = ({ 
+  formData, 
+  setFormData, 
+  onSubmit, 
+  onCancel, 
+  submitLabel,
+  mode = "project"   
+}) => {
 
-   const [errors, setErrors] = useState({});
-  
-   const validateForm = () => {
+  const [errors, setErrors] = useState({});
+  const { projects } = useProjects();
+  const [selectedProject, setSelectedProject] = useState("");
+
+
+  const validateForm = () => {
     let newErrors = {};
 
-    if (!formData.project_title.trim()) {
+    if (mode === "project" && !formData.project_title?.trim()) {
       newErrors.project_title = "Project title is required";
     }
 
-    if (!formData.description.trim()) {
+    if (mode === "class" && !formData.name?.trim()) {
+      newErrors.name = "Class name is required";
+    }
+
+    if (mode !== "member" && !formData.description?.trim()) {
       newErrors.description = "Description is required";
     }
+    if (mode === "class" && !formData.color) {
+      newErrors.color = "Please select a color";
+    }
+    if (mode === "member" && !formData.name?.trim()) {
+        newErrors.name = "Name is required";
+      }
+
+      if (mode === "member" && !formData.role) {
+        newErrors.role = "Role is required";
+      }
+
+      if (mode === "member" && (!formData.assigned || formData.assigned <= 0)) {
+        newErrors.assigned = "Assigned value is required";
+      }
+
+
     return newErrors;
   };
-  //  const handleChange = (field, value) => {
-  //   setFormData({ ...formData, [field]: value });
-const handleChange = (field, value) => {
-  setFormData((prev) => ({
-    ...prev,
-    [field]: value,
-  }));
 
-
-    // Clear error dynamically when user types
-    setErrors((prev) => ({ ...prev, [field]: "" }));
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setErrors(prev => ({ ...prev, [field]: "" }));
   };
 
-
-   const handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
     const validationErrors = validateForm();
     setErrors(validationErrors);
-
-    if (Object.keys(validationErrors).length > 0) return; 
-
-    onSubmit(e); 
+    if (Object.keys(validationErrors).length > 0) return;
+    onSubmit(e);
   };
-
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-       <Input
-        label="Project Title"
+
+      {/* ---------------- PROJECT TITLE ---------------- */}
+      {mode === "project" && (
+        <Input
+          label="Project Title"
+          required
+          name="project_title"
+          placeholder="e.g., Vehicle Detection System"
+          value={formData.project_title}
+          onChange={(e) => handleChange("project_title", e.target.value)}
+          error={errors.project_title}
+        />
+      )}
+
+      {/* ---------------- CLASS NAME ---------------- */}
+      {mode === "class" && (
+        <Input
+          label="Class Name"
+          required
+          name="name"
+          placeholder="Helmet"
+          value={formData.name}
+          onChange={(e) => handleChange("name", e.target.value)}
+          error={errors.name}
+        />
+      )}
+
+      {/* ---------------- COLOR PICKER ---------------- */}
+      {mode === "class" && (
+        <ColorPalette
+          label="Color"
+          required
+          value={formData.color}
+          onChange={(color) => handleChange("color", color)}
+          error={errors.color}
+        />
+      )}
+      
+      {mode === "class" && (
+        <Dropdown
+          label="Project"
+          required
+          placeholder="Select Project"
+          value={formData.project}
+          options={projects.map((p) => ({
+            label: p.project_title,
+            value: p.project_title,
+          }))}
+          onChange={(value) =>
+            setFormData((prev) => ({ ...prev, project: value }))
+          }
+        />
+      )}
+
+      {/* ---------------- DESCRIPTION ---------------- */}
+      {mode !== "member" && (
+        <TextArea
+          label="Description"
+          required
+          name="description"
+          placeholder="Describe..."
+          value={formData.description}
+          onChange={(e) => handleChange("description", e.target.value)}
+          error={errors.description}
+        />
+      )}
+
+      {/* ---------------- TAGS (PROJECT ONLY) ---------------- */}
+      {mode === "project" && (
+        <Input
+          label="Tags / Domain"
+          name="tags"
+          placeholder="e.g., Manufacturing, Automotive"
+          value={formData.tags}
+          onChange={(e) => handleChange("tags", e.target.value)}
+        />
+      )}
+
+      {/* ---------------- MEMBER NAME ---------------- */}
+      {mode === "member" && (
+        <Input
+          label="Name"
+          required
+          name="name"
+          placeholder="Enter Member Name"
+          value={formData.name}
+          onChange={(e) => handleChange("name", e.target.value)}
+          error={errors.name}
+        />
+      )}
+
+      {/* ---------------- MEMBER ROLE ---------------- */}
+     {mode === "member" && (
+      <Dropdown
+        label="Role"
         required
-        name="project_title"
-        placeholder="e.g., Vehicle Detection System"
-        value={formData.title}
-        onChange={(e) => handleChange("project_title", e.target.value)}
-        error={errors.project_title}
+        placeholder="Select Role"
+        value={formData.role || ""}
+        options={[
+          { label: "Annotator", value: "Annotator" },
+          { label: "Reviewer", value: "Reviewer" },
+        ]}
+        onChange={(value) => handleChange("role", value)}
       />
-
-      <TextArea
-        label="Description"
-        required
-        name="description"
-        placeholder="Describe your project goals..."
-        value={formData.description}
-        onChange={(e) => handleChange("description", e.target.value)}
-        error={errors.description}
-      />
-
-      <Input
-        label="Tags / Domain"
-        name="tags"
-        placeholder="e.g., Manufacturing, Automotive"
-        value={formData.tags}
-        onChange={(e) => handleChange("tags", e.target.value)}
-      />
-
+      )}
+      {/* ---------------- ASSIGNED ---------------- */}
+      {mode === "member" && (
+        <Input
+          label="Assigned"
+          required
+          name="assigned"
+          type="number"
+          placeholder="50"
+          value={formData.assigned}
+          onChange={(e) => handleChange("assigned", e.target.value)}
+          error={errors.assigned}
+        />
+      )}
+     {/* ---------------- ACTIONS ---------------- */}
       <div className={styles.modalActions}>
         <Button variant="secondary" type="button" onClick={onCancel}>
           Cancel
@@ -91,6 +203,7 @@ const handleChange = (field, value) => {
           {submitLabel}
         </Button>
       </div>
+
     </form>
   );
 };

@@ -14,19 +14,26 @@ const Dropdown = ({
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // close dropdown on outside click
+  const selectedOption = options.find(
+    (opt) => opt.value === value
+  );
+
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
         setOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectOption = (option) => {
-    onChange(option);
+  const selectOption = (optionValue) => {
+    onChange(optionValue);
     setOpen(false);
   };
 
@@ -41,16 +48,20 @@ const Dropdown = ({
       <div
         className={`${styles.selectBox} ${
           error ? styles.errorInput : ""
-        }`}
+        } ${disabled ? styles.disabled : ""}`}
         onClick={() => !disabled && setOpen(!open)}
       >
-        <span className={value ? styles.valueText : styles.placeholder}>
-          {value || placeholder}
+        <span
+          className={
+            selectedOption ? styles.valueText : styles.placeholder
+          }
+        >
+          {selectedOption?.label || placeholder}
         </span>
         <i className="fi fi-rr-angle-down"></i>
       </div>
 
-      {open && (
+      {open && !disabled && (
         <div className={styles.dropdown}>
           {options.length === 0 && (
             <div className={styles.noOption}>No options</div>

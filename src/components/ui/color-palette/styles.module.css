@@ -1,0 +1,24 @@
+.paletteRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.colorInput {
+  width: 42px;
+  height: 42px;
+  border: none;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.colorPreview {
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 80px;
+  text-align: center;
+}

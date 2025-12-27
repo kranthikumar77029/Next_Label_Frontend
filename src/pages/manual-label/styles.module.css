@@ -6,3 +6,35 @@
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: var(--spacing-lg);
 }
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-top: 40px;
+ 
+}
+
+.emptyStateimg {
+  width: 500px;
+  margin-bottom: 10px;
+}
+.searchBox {
+  display: flex;
+  align-items: center;
+  border: 2px solid var(--border-color);
+  padding: 10px 16px;
+  border-radius: 12px;
+  background-color: var(--bg-input);
+  gap: 10px;
+  width: 280px;
+  color: var(--text-color);
+  margin-bottom: 10px;
+}
+
+.searchBox input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 14px;
+  color: var(--text-color);
+}

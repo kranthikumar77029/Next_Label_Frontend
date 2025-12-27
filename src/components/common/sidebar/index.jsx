@@ -4,10 +4,13 @@ import { useAuth } from "@/context/AuthContext.jsx";
 import { snrLogo } from '@/resources/index.jsx';
 import { ROUTES } from '@/routes/constants.js';
 import { Button } from '@/components/ui/button/index.jsx';
+import { useTheme } from '@/provideers/themeprovider';
 import styles from './styles.module.css';
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
+
   const { logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -92,8 +95,24 @@ const Sidebar = () => {
           </NavLink>
         ))}
       </nav>
+    
+      <div className={styles.themeSection}>
+          <button
+            className={styles.themeToggle}
+            onClick={toggleTheme}
+            title="Toggle theme"
+          >
+            <i
+              className={`fi ${
+                theme === "dark" ? "fi-rr-sun" : "fi-rr-moon"
+              } ${styles.themeIcon}`}
+            ></i>
+            <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+          </button>
+        </div>
 
-      <div className={styles.logoutSection}>
+        <div className={styles.logoutSection}>
+
         <button
           className={styles.logoutButton}
           onClick={() => setShowLogoutModal(true)}

@@ -1,11 +1,56 @@
 import styles from "./styles.module.css";
- 
+import { useState, useEffect } from "react";
 import { KPIBox } from "@/components/common/kpi";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
- 
+import { listImagesApi } from "@/networking/upload/uploadapi";
+import { listClassesApi } from "@/networking/class-manager/classapi";
 
 const ProjectCard = ({ project, onEdit, onDelete }) => {
+  const [imageCount, setImageCount] = useState(0);
+  const [classCount, setClassCount] = useState(0);
+  const [loadingImages, setLoadingImages] = useState(true);
+  const [loadingClasses, setLoadingClasses] = useState(true);
+
+  // ---------------------------
+  // Fetch image count
+  // ---------------------------
+   const fetchImagesProjectWise = async () => {
+      try {
+        const response = await listImagesApi({
+          project_title: project.title,
+          project_id: project.id,
+        });
+
+        setImageCount(response?.data?.total || 0);
+      } catch (error) {
+        console.error("Error fetching image count:", error);
+      } finally {
+        setLoadingImages(false);
+      }
+    };
+  useEffect(() => {
+   fetchImagesProjectWise();
+  }, [project.id]);
+
+  // ---------------------------
+  // Fetch class count
+  // ---------------------------
+  const fetchClasses = async () => {
+      try {
+        const response = await listClassesApi(project.title);
+        setClassCount(response?.data?.length || 0);
+      } catch (error) {
+        console.error("Error fetching class count:", error);
+      } 
+      finally {
+        setLoadingClasses(false);
+      }
+    };
+  useEffect(() => {
+   fetchClasses();
+  }, [project.title]);
+
   return (
     <div className={styles.projectCard}>
       <div className={styles.projectCardContent}>
@@ -16,34 +61,38 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
             <h3 className={styles.projectTitle}>{project.title}</h3>
 
             <div className={styles.projectDate}>
-              <i className="fi fi-rr-calendar" style={{ fontSize: 11, opacity: 0.7 }} />
+              <i
+                className="fi fi-rr-calendar"
+                style={{ fontSize: 11, opacity: 0.7 }}
+              />
               <span>{project.date}</span>
             </div>
           </div>
 
-          {/* Replaced custom badge with your StatusBadge component */}
-            <StatusBadge 
-                status={project.status?.toLowerCase().trim()} 
-                text={project.status}
-            />
-
+          <StatusBadge
+            status={project.status?.toLowerCase().trim()}
+            text={project.status}
+          />
         </div>
 
         {/* DESCRIPTION */}
-       <p className={styles.projectDescription}>{project.description}</p>
+        <p className={styles.projectDescription}>{project.description}</p>
 
         {/* KPIs */}
-     <KPIBox
-      items={[
-        { icon: "fi-rr-picture", value: project.images, label: "Images" },
-        { icon: "fi-rr-palette", value: project.classes, label: "Classes" },
-        // { icon: "fi-rr-check", value: project.accuracy, label: "Accuracy" },
-         
-      ]}
-    />
-
-
-
+        <KPIBox
+          items={[
+            {
+              icon: "fi-rr-picture",
+              value: loadingImages ? "—" : imageCount,
+              label: "Images",
+            },
+            {
+              icon: "fi-rr-palette",
+              value: loadingClasses ? "—" : classCount,
+              label: "Classes",
+            },
+          ]}
+        />
 
         {/* ACTIONS */}
         <div className={styles.projectActions}>
@@ -65,4 +114,4 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
   );
 };
 
-export {ProjectCard};
+export { ProjectCard };
