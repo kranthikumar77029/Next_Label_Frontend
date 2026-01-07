@@ -1,5 +1,6 @@
 .formGroup {
-  margin-bottom: var(--spacing-lg);
+  /* margin-bottom: var(--spacing-lg); */
+  margin-bottom: 10px;
 }
 .label {
   display: block;
@@ -20,11 +21,8 @@
   width: 100%;
   height: 6px;
   cursor: pointer;
-
   /* THIS is the magic */
   accent-color: #25ebcd;
-
-  /* subtle polish */
   opacity: 0.9;
   transition: opacity 0.2s ease;
 }
@@ -34,8 +32,15 @@
 }
 
 
-.modalActions {
+
+.formWrapper {
   display: flex;
-  gap: var(--spacing-md);
-  justify-content: flex-end;
+  flex-direction: column;
+  height: 100%;       /* IMPORTANT */
+}
+
+.scrollArea {
+  flex: 1;
+  overflow-y: auto;   /* ✅ only fields scroll */
+  padding-right: 4px; /* prevents scrollbar overlap */
 }

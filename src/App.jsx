@@ -5,6 +5,8 @@ import { ProjectProvider } from "./context/ProjectContext.jsx";
 import { routes } from "./routes/index.jsx";
 import { ThemeProvider } from "./provideers/themeprovider.jsx";
 import { ToastContainer } from 'react-toastify';
+import { ProjectImagesProvider } from "./context/ProjectImagesContext.jsx";
+ 
  
 
 /**
@@ -25,7 +27,11 @@ function App() {
       <AuthProvider>
         <ProjectProvider>
           <ThemeProvider>
+            <ProjectImagesProvider>
+              
         <AppRoutes />
+        
+        </ProjectImagesProvider>
         </ThemeProvider>
         </ProjectProvider>
         </AuthProvider>

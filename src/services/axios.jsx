@@ -40,12 +40,13 @@ const projectsApi = createAxiosInstance(baseURL);
 const uploadAndManageImagesApi = createAxiosInstance(imagesBaseURL);
 const teamApi=createAxiosInstance(baseURL);
 const classApi=createAxiosInstance(baseURL);
-
+const generate_pseudo_labelsApi=createAxiosInstance(baseURL)
  
 
 export {
   projectsApi,
   uploadAndManageImagesApi,
   teamApi,
-  classApi
+  classApi,
+  generate_pseudo_labelsApi
 };
