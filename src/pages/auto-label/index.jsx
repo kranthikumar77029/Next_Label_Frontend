@@ -4,14 +4,19 @@ import { ROUTES } from '@/routes/constants';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjects } from '@/context/ProjectContext';
+import { useProjectImages } from '@/context/ProjectImagesContext';
 import NoDataFound from "@/assets/no-data-found.svg";
 import AutoLabelModal from '@/components/common/auto-label-modal';
 import { LabelCard } from '@/components/common/label-card';
+import { psuedo_labelsApi } from '@/networking/psuedo_labels/psuedo_labelsapi';
 import styles from './styles.module.css';
+import { useToast } from '@/hooks/use-toast';
 
 const AutoLabel = () => {
-  const {projects} = useProjects();
-  console.log("projectslist",projects);
+  const {projects,selectedProject,setSelectedProject} = useProjects();
+  const {totalImagesByProject,fetchImagesByProject} = useProjectImages();
+  const {showError,showSuccess}=useToast();
+  // console.log("selectedProject",selectedProject);
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
@@ -25,33 +30,107 @@ const AutoLabel = () => {
     const matchesSearch = p.project_title.toLowerCase().includes(search.toLowerCase());
     return matchesSearch;
   });
+  
    
   // Handle progress simulation
-  const runAutoLabel = () => {
+const runAutoLabel = async (formData) => {
+  if (!selectedProject?.id) return;
+  if (
+    formData.modelType === "custom" &&
+    !formData.customModel?.trim()
+  ) {
+    showError("Please enter custom model name");
+    return;
+  }
+const payload = {
+    model_path:
+    formData.modelType === "custom"
+      ? `${formData.customModel.toLowerCase()}.pt`
+      : formData.modelType,
+    project_id: selectedProject.id,
+    project_title: selectedProject.project_title,
+    conf_threshold: formData.confidence,
+    iou_threshold: formData.iou_confidence,
+    filter_classes: formData.classes.map((_, index) => index),
+    // filter_classes: Array.isArray(formData.classes)
+    // ? formData.classes
+    // : formData.classes
+    //     .split(',')
+    //     .map(c => c.trim())
+    //     .filter(Boolean),
+    dbscan_eps:formData.dbscan_eps,
+    dbscan_min_samples: formData.dbscan_min_samples,
+  };
+
+  console.log("Auto label payload:", payload);
+
+  try {
     setProcessing(true);
     setProgress(0);
     setLogs([]);
 
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setProcessing(false);
-          setTimeout(() => setShowModal(false), 1000);
-          return 100;
-        }
+    // ✅ API CALL
+    const response=await psuedo_labelsApi(payload);
+    if(response.status===200){
+     showSuccess("Autolabelling SuccessFull")
+    
+    }
+  } catch (error) {
+    setProcessing(false);
+    showError(
+      error.detail||
+      "Auto labeling failed"
+    );
+    return;
+  }
+  // Continue with progress simulation
+    simulateProgress(formData);
+};
 
-        if (prev === 20) setLogs((l) => [...l, '✓ Model loaded successfully']);
-        if (prev === 50) setLogs((l) => [...l, '✓ Processing batch 1/5 - Detected 12 helmets']);
-        if (prev === 80) setLogs((l) => [...l, '✓ Processing batch 5/5 - Detected 8 helmets']);
 
-        return prev + 2;
-      });
-    }, 100);
-  };
-  
+const simulateProgress = (formData) => {
+  const imageCount = totalImagesByProject?.[selectedProject?.id] ?? 0;
+  const classList = formData.classes
+    .split(',')
+    .map(c => c.trim())
+    .filter(Boolean);
+  const totalSteps = classList.length + 2;
+  let step = 0;
 
-  return (
+  const interval = setInterval(() => {
+    setLogs(prev => {
+      const newLogs = [...prev];
+      if (step === 0) {
+        newLogs.push('✓ Model loaded successfully');
+      } else if (step <= classList.length) {
+        newLogs.push(
+          imageCount === 0
+            ? `No images to detect for "${classList[step - 1]}"`
+            : `✓ Detecting "${classList[step - 1]}"`
+        );
+      } else {
+        newLogs.push(
+          imageCount === 0
+            ? ' Auto labeling skipped due to no images'
+            : '✓ Auto labeling completed'
+        );
+      }
+
+      return newLogs;
+    });
+
+    setProgress(Math.round(((step + 1) / totalSteps) * 100));
+    step++;
+
+    if (step >= totalSteps) {
+      clearInterval(interval);
+      setProcessing(false);
+      setTimeout(() => setShowModal(false), 3000);
+    }
+  }, 800);
+};
+
+return (
     <Layout
       pageTitle="Auto Labeling Studio"
       searchBox={
@@ -72,16 +151,6 @@ const AutoLabel = () => {
       // }
     >
       <div className={styles.container}>
-         {/* <div className={styles.searchBox}>
-            <i className="fi-rr-search" />
-            <input
-              type="text"
-              placeholder="Search projects..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1);}}
-            />
-          </div> */}
-
       <div className={styles.projectsList}>
       {(filteredProjects || []).map((project) => (
        <LabelCard
@@ -91,7 +160,11 @@ const AutoLabel = () => {
         description={project.description}
         tags={project.tags}
         date={project.created_at}
-        onRun={() => setShowModal(true)}
+        onRun={() => {
+          setSelectedProject(project);
+          fetchImagesByProject(project.id, project.project_title);
+          setShowModal(true);
+        }}
         buttonText="Run Auto Labeling"
         buttonIcon="fi-rr-magic-wand"
         onPressLabelCard={() =>

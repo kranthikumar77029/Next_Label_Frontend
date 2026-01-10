@@ -5,9 +5,9 @@ export const createClassApi= async (data)=>{
     return classApi.post(endPoints.createClass,data)
 }
 
-export const listClassesApi = async (project_title) => {
+export const listClassesApi = async (project_id) => {
   return classApi.get(endPoints.listClasses, {
-    params: { project_title },
+    params: { project_id },
   });
 };
 

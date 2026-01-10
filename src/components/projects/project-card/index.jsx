@@ -3,53 +3,28 @@ import { useState, useEffect } from "react";
 import { KPIBox } from "@/components/common/kpi";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { listImagesApi } from "@/networking/upload/uploadapi";
+// import { listImagesApi } from "@/networking/upload/uploadapi";
 import { listClassesApi } from "@/networking/class-manager/classapi";
+import { useProjectImages } from "@/context/ProjectImagesContext";
 
-const ProjectCard = ({ project, onEdit, onDelete }) => {
-  const [imageCount, setImageCount] = useState(0);
-  const [classCount, setClassCount] = useState(0);
-  const [loadingImages, setLoadingImages] = useState(true);
-  const [loadingClasses, setLoadingClasses] = useState(true);
+const ProjectCard = ({ project, onEdit, onDelete,onViewClasses }) => {
 
-  // ---------------------------
-  // Fetch image count
-  // ---------------------------
-   const fetchImagesProjectWise = async () => {
-      try {
-        const response = await listImagesApi({
-          project_title: project.title,
-          project_id: project.id,
-        });
+  const {
+  totalImagesByProject,
+  loadingByProject,
+  fetchImagesByProject,
+} = useProjectImages();
+ const [loadingImages, setLoadingImages] = useState(true);
+  // const [loadingClasses, setLoadingClasses] = useState(true);
+useEffect(() => {
+  if (project?.id && project?.title) {
+    fetchImagesByProject(project.id, project.title);
+  }
+}, [project.id]);
+const imageCount = totalImagesByProject?.[project.id] ?? 0;
+const isLoadingImages = loadingByProject?.[project.id];
 
-        setImageCount(response?.data?.total || 0);
-      } catch (error) {
-        console.error("Error fetching image count:", error);
-      } finally {
-        setLoadingImages(false);
-      }
-    };
-  useEffect(() => {
-   fetchImagesProjectWise();
-  }, [project.id]);
-
-  // ---------------------------
-  // Fetch class count
-  // ---------------------------
-  const fetchClasses = async () => {
-      try {
-        const response = await listClassesApi(project.title);
-        setClassCount(response?.data?.length || 0);
-      } catch (error) {
-        console.error("Error fetching class count:", error);
-      } 
-      finally {
-        setLoadingClasses(false);
-      }
-    };
-  useEffect(() => {
-   fetchClasses();
-  }, [project.title]);
+   
 
   return (
     <div className={styles.projectCard}>
@@ -83,19 +58,19 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
           items={[
             {
               icon: "fi-rr-picture",
-              value: loadingImages ? "—" : imageCount,
+                value: isLoadingImages ? "—" : imageCount,
               label: "Images",
             },
             {
               icon: "fi-rr-palette",
-              value: loadingClasses ? "—" : classCount,
+              value: project.classesCount, 
               label: "Classes",
             },
           ]}
         />
 
         {/* ACTIONS */}
-        <div className={styles.projectActions}>
+     <div className={styles.projectActions}>
           <Button
             variant="secondary"
             icon="fi-rr-edit"
@@ -107,7 +82,16 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
             icon="fi-rr-trash"
             onClick={() => onDelete(project)}
           />
+
+          {/* Text button on right */}
+          <Button
+            variant="primary"
+          onClick={() => onViewClasses(project)}
+          >
+            Class Manager
+          </Button>
         </div>
+
 
       </div>
     </div>

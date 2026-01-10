@@ -2,6 +2,7 @@ import styles from "./styles.module.css";
 
 const Button = ({
   children,
+  onClick,
   variant = "primary",
   size = "medium",
   icon,
@@ -15,6 +16,7 @@ const Button = ({
   return (
     <button
       className={`${styles.button} ${styles[variant]} ${sizeClass} ${className}`}
+      onClick={onClick}
       {...props}
     >
       {icon && <i className={`fi ${icon} ${styles.icon}`}></i>}

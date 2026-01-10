@@ -8,6 +8,7 @@ import { useProjects } from '@/context/ProjectContext';
 import { useEffect, useState } from 'react';
 import { createMemberApi,listMembersApi,assignTaskApi,listTasksApi,editMemberApi,deleteMemberApi} from "@/networking/team_dashboard/teamapi";
 import styles from './styles.module.css';
+import { useToast } from '@/hooks/use-toast';
 
 const Team = () => {
   const { projects, selectedProject, setSelectedProject } = useProjects();
@@ -18,7 +19,7 @@ const Team = () => {
   role: "all",
   status: "all",
 });
-
+  const {showSuccess,showError} =useToast();
     
   // Form data for editing
   const [formData, setFormData] = useState({
@@ -68,9 +69,10 @@ const statuses = [ "active", "inactive"];
 
   // New member
   const [newMember, setNewMember] = useState({
+    role: '',
     name: '',
     password: '',
-    role: 'Annotator',
+  
   });
 
   // Assign tasks
@@ -216,21 +218,23 @@ const removeMember = async () => {
 
   try {
    
-    await deleteMemberApi({
+    const response=await deleteMemberApi({
       member_id: selected.id,
       name: selected.name, 
     });
-
+    if (response.status===200){
     // ✅ Update UI only after backend success
     setMembers((m) => m.filter((x) => x.id !== selected.id));
-
+    showSuccess("Member Deleted Successfully")
     setShowDelete(false);
     setSelected(null);
+    }
   } catch (err) {
-    console.error(
-      "Delete member failed:",
-      err.response?.data || err
-    );
+    showError(err.detail || "Delete member failed:")
+    // console.error(
+    //   "Delete member failed:",
+    //   err.response?.data || err
+    // );
   }
    
 };
@@ -241,7 +245,7 @@ const applyAssignment = async () => {
 
   try {
       await assignTaskApi({ project_id, member_id, image_range });
-
+      showSuccess("Tasks Assigned Sucessfullly")
     // ✅ refresh tasks & members
     await fetchTasks();
 
@@ -251,7 +255,7 @@ const applyAssignment = async () => {
       image_range: '',
     });
   } catch (err) {
-    console.error('Task assignment failed:', err);
+    showError(err?.response?.data?.message || 'Task assignment failed');
   } 
   
 };
@@ -260,7 +264,8 @@ return (
           pageTitle="Team Labelling"
         >
         <div className={styles.container}>
-          {/* Create Member */}
+          <div className={styles.topRow}>
+         {/* Create Member */}
         <div className={styles.card}>
               <div className={styles.cardHeader}>Create Team Member</div>
 
@@ -385,6 +390,8 @@ return (
               </div>
             </div>
 
+          </div>
+
         {/* Members table */}
        <div className={styles.card}>
         <div className={styles.cardHeader}>Team Members</div>
@@ -394,42 +401,49 @@ return (
             <thead>
               <tr>
                 <th>Name</th>
-                 <th>
-                 Role
-                <select
-                  className={styles.filterSelect}
-                  value={filters.role}
-                  onChange={(e) =>
-                    setFilters({ ...filters, role: e.target.value })
-                  }
-                >
-                  {roles.map((r) => (
-                    <option key={r} value={r}>
-                      {r === "all" ? "All" : r}
-                    </option>
-                  ))}
-                </select>
-                </th>
                 <th>
-            Project
-            <select
-              className={styles.filterSelect}
-              value={filters.project}
-              onChange={(e) =>
-                setFilters({ ...filters, project: e.target.value })
-              }
-            >
-              {projectOptions.map((p) => (
-                <option key={p} value={p}>
-                  {p === "all" ? "All" : p}
-                </option>
-              ))}
-            </select>
+                  <div className={styles.thWithfilter}>
+                    <span>Role</span>
+
+                    <select
+                      className={styles.filterSelect}
+                      value={filters.role}
+                      onChange={(e) =>
+                        setFilters({ ...filters, role: e.target.value })
+                      }
+                    >
+                      {roles.map((r) => (
+                        <option key={r} value={r}>
+                          {r === "all" ? "All" : r}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </th>
+                 <th>
+                  <div className={styles.thWithfilter}>
+                      Project
+                    <select
+                      className={styles.filterSelect}
+                      value={filters.project}
+                      onChange={(e) =>
+                        setFilters({ ...filters, project: e.target.value })
+                      }
+                    >
+                      {projectOptions.map((p) => (
+                        <option key={p} value={p}>
+                          {p === "all" ? "All" : p}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+          
                 </th>
                 <th>Assigned</th>
                 <th>Completed</th>
                <th>
-                Status
+                <div className={styles.thWithfilter}>
+                   Status
                 <select
                   className={styles.filterSelect}
                   value={filters.status}
@@ -443,7 +457,8 @@ return (
                     </option>
                   ))}
                 </select>
-              </th>
+                </div>
+               </th>
                <th>Actions</th>
               </tr>
             </thead>

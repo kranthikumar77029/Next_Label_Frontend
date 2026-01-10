@@ -1,56 +1,41 @@
-import { useParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { listImagesApi, deleteImageApi } from '@/networking/upload/uploadapi';
+import { deleteImageApi } from '@/networking/upload/uploadapi';
 import { useToast } from "@/hooks/use-toast";
 import { ROUTES } from '../../routes/constants';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from "lucide-react";
 import styles from "./styles.module.css";
+import { useProjectImages } from '@/context/ProjectImagesContext';
 
 const ProjectImages = () => {
   const navigate = useNavigate();
   const { selectedProject, projectId } = useParams();
+  const { showSuccess, showError } = useToast();
+
+  const {
+    images,
+    totalImages,
+    loading,
+    fetchImagesByProject,
+    setImages,
+    setTotalImages,
+  } = useProjectImages();
+
   const [previewImage, setPreviewImage] = useState(null);
-  const [images, setImages] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const { showSuccess, showError, showWarning} = useToast();
 
   // -----------------------------
-  // Fetch images
+  // Fetch images on load
   // -----------------------------
-  const fetchImagesProjectWise = async () => {
-    const payload = {
-      project_title: selectedProject,
-      project_id: projectId,
-    };
-
-    try {
-      const response = await listImagesApi(payload);
-
-      setImages(response?.data?.images || []);
-      setTotal(response?.data?.total || 0);
-    } catch (error) {
-       showError(
-      error?.response?.data?.message || "Failed to fetch Images"
-    );
-    }
-     finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchImagesProjectWise();
-  }, []);
+    fetchImagesByProject(projectId, selectedProject);
+  }, [projectId, selectedProject]);
 
   // -----------------------------
-  // Delete image handler
+  // Delete image
   // -----------------------------
   const handleDelete = async (img) => {
-    showWarning("Are you sure you want to delete this image?")
-    // const confirmDelete = confirm("Are you sure you want to delete this image?");
+    const confirmDelete = confirm("Are you sure you want to delete this image?");
     if (!confirmDelete) return;
 
     const payload = {
@@ -61,62 +46,53 @@ const ProjectImages = () => {
 
     try {
       await deleteImageApi(payload);
-      showSuccess("Image deleted successfully")
-      // Remove from UI instantly
-      setImages((prev) => prev.filter((item) => item.id !== img.id));
-      setTotal((prev) => prev - 1);
+
+      showSuccess("Image deleted successfully");
+
+      // 🔥 Update context state
+      setImages(prev => prev.filter(item => item.id !== img.id));
+      setTotalImages(prev => Math.max(prev - 1, 0));
 
     } catch (error) {
-       showError(
-      err?.response?.data?.message || "Failed to delete image"
-    );
+      showError(
+        error?.response?.data?.message || "Failed to delete image"
+      );
     }
   };
 
-  
   if (loading) return <p>Loading images...</p>;
 
   return (
     <div className={styles.container}>
-     <div className={styles.header}>
-        {/* LEFT: Back Arrow */}
+      {/* HEADER */}
+      <div className={styles.header}>
         <button
           className={styles.backBtn}
           onClick={() => navigate(ROUTES.AUTO_LABEL)}
-          aria-label="Back"
         >
           <i className="fi-rr-arrow-left" />
         </button>
 
-        {/* CENTER: Title */}
         <h2 className={styles.title}>
-          {selectedProject} Images ({total})
+          {selectedProject} Images ({totalImages})
         </h2>
 
-        {/* RIGHT: Action Button */}
         <Button
           icon="fi-rr-arrow-right"
+          disabled={totalImages === 0}
           onClick={() => navigate(ROUTES.ANNOTATE)}
         >
           View Annotations
         </Button>
       </div>
 
-      {/* <Button
-           icon="fi-rr-arrow-right"
-           disabled={!images.length}
-           onClick={() => navigate(ROUTES.AUTO_LABEL)}
-        >
-           Next: Auto Labeling
-         </Button> */}
-
-      {total === 0 ? (
+      {/* CONTENT */}
+      {totalImages === 0 ? (
         <p className={styles.noImages}>No images found.</p>
       ) : (
         <div className={styles.grid}>
           {images.map((img) => (
             <div key={img.id || img.filename} className={styles.card}>
- 
               <button
                 className={styles.deleteBtn}
                 onClick={(e) => {
@@ -136,43 +112,36 @@ const ProjectImages = () => {
             </div>
           ))}
         </div>
-
       )}
-   {previewImage && previewImage.url && (
-  <div
-    className={styles.previewOverlay}
-    onClick={() => setPreviewImage(null)}
-  >
-    <div
-      className={styles.previewModal}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* IMAGE */}
-      <div className={styles.imageWrapper}>
-        <img
-          src={previewImage.url}
-          alt={previewImage.filename || 'preview'}
-          className={styles.previewImage}
-        />
 
-        {/* CLOSE BUTTON */}
-        <button
-          className={styles.closeBtn}
+      {/* PREVIEW MODAL */}
+      {previewImage && (
+        <div
+          className={styles.previewOverlay}
           onClick={() => setPreviewImage(null)}
         >
-          ✕
-        </button>
-      </div>
-
-      {/* OPTIONAL FILENAME */}
-      <p className={styles.previewName}>{previewImage.filename}</p>
+          <div
+            className={styles.previewModal}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={previewImage.url}
+              alt={previewImage.filename}
+              className={styles.previewImage}
+            />
+            <button
+              className={styles.closeBtn}
+              onClick={() => setPreviewImage(null)}
+            >
+              ✕
+            </button>
+            <p className={styles.previewName}>
+              {previewImage.filename}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-)}
-
-
-    </div>
-    
   );
 };
 

@@ -21,7 +21,7 @@ const ProjectSelector = ({ value, onChange }) => {
 
   return (
     <div className={styles.selector}>
-      <label className={styles.label}>Current Project</label>
+      <label className={styles.label}>Select Your Project</label>
 
       <select
         className={styles.select}

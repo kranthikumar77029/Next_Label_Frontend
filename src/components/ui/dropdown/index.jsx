@@ -3,85 +3,86 @@ import styles from "./styles.module.css";
 
 const Dropdown = ({
   label,
-  placeholder = "Select an option",
-  value,
+  placeholder = "Select options",
+  value = [],
   options = [],
   onChange,
   error,
   required = false,
   disabled = false,
+  multiple = false,
 }) => {
   const [open, setOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const ref = useRef(null);
 
-  const selectedOption = options.find(
-    (opt) => opt.value === value
-  );
+  // useEffect(() => {
+  //   const handler = (e) => {
+  //     if (ref.current && !ref.current.contains(e.target)) {
+  //       setOpen(false);
+  //     }
+  //   };
+  //   document.addEventListener("mousedown", handler);
+  //   return () => document.removeEventListener("mousedown", handler);
+  // }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const selectOption = (optionValue) => {
-    onChange(optionValue);
-    setOpen(false);
+  const toggleValue = (val) => {
+    if (value.includes(val)) {
+      onChange(value.filter(v => v !== val));
+    } else {
+      onChange([...value, val]);
+    }
   };
 
+  // Single select fallback
+  if (!multiple) {
+    return (
+      <div className={styles.wrapper}>
+        {label && <label className={styles.label}>{label}</label>}
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={styles.selectBox}
+        >
+          <option value="" disabled>{placeholder}</option>
+          {options.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+      </div>
+    );
+  }
+
+  // Checkbox multi-select
   return (
-    <div className={styles.wrapper} ref={dropdownRef}>
-      {label && (
-        <label className={styles.label}>
-          {label} {required && <span className={styles.required}>*</span>}
-        </label>
-      )}
+    <div className={styles.wrapper} ref={ref}>
+      {label && <label className={styles.label}>{label}</label>}
 
       <div
-        className={`${styles.selectBox} ${
-          error ? styles.errorInput : ""
-        } ${disabled ? styles.disabled : ""}`}
-        onClick={() => !disabled && setOpen(!open)}
+        className={styles.selectBox}
+        onClick={() => setOpen(!open)}
       >
-        <span
-          className={
-            selectedOption ? styles.valueText : styles.placeholder
-          }
-        >
-          {selectedOption?.label || placeholder}
-        </span>
-        <i className="fi fi-rr-angle-down"></i>
+        {value.length
+          ? options
+              .filter(o => value.includes(o.value))
+              .map(o => o.label)
+              .join(", ")
+          : placeholder}
       </div>
 
-      {open && !disabled && (
+      {open && (
         <div className={styles.dropdown}>
-          {options.length === 0 && (
-            <div className={styles.noOption}>No options</div>
-          )}
-
-          {options.map((opt) => (
-            <div
-              key={opt.value}
-              className={`${styles.option} ${
-                opt.value === value ? styles.active : ""
-              }`}
-              onClick={() => selectOption(opt.value)}
-            >
-              {opt.label}
-            </div>
+          {options.map(opt => (
+            <label key={opt.value} className={styles.option}>
+              <input
+                type="checkbox"
+                checked={value.includes(opt.value)}
+                onChange={() => toggleValue(opt.value)}
+              />
+              <span>{opt.label}</span>
+            </label>
           ))}
         </div>
       )}
-
-      {error && <p className={styles.errorText}>{error}</p>}
     </div>
   );
 };

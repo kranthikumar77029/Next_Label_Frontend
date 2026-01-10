@@ -13,7 +13,6 @@ const Layout = ({
    
   const { projects, selectedProject, setSelectedProject } = useProjects();
   const selectedValue = selectedProject?.id || "";
-  console.log("selected projwect",selectedValue)
 ;
   return (
     <div className={styles.layout}>

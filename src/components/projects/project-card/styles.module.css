@@ -119,3 +119,6 @@
   /* border-top: 1px solid var(--color-border); */
   margin-top: auto;
 }
+.projectActions :last-child {
+  margin-left: auto;
+}

@@ -4,6 +4,8 @@ import { useState,useEffect } from 'react';
 import { Modal } from '@/components/common/modal';
 import { Form } from '@/components/common/form';
 import { useProjects } from '@/context/ProjectContext';
+// import { useClasses } from '@/context/classesContext';
+import { useToast } from '@/hooks/use-toast';
 import { createClassApi,listClassesApi,updateClassApi,deleteClassApi} from '@/networking/class-manager/classapi';
 import styles from './styles.module.css';
 
@@ -14,21 +16,25 @@ const Classes = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
+  const {showSuccess, showError}=useToast();
+
   const [formData, setFormData] = useState({
     name: '',
     color: '#06b6d4',
     description: '',
     project: '',
+    project_title:''
   });
 
   
 const handleSubmit = async (e) => {
-  e.preventDefault();
+  // e.preventDefault();
 
   const payload = {
     class_name: formData.name,
     color: formData.color,
-    project_title: formData.project,
+    project_id: formData.project,
+    project_title: formData.project_title,
     description: formData.description,
   };
 
@@ -36,8 +42,9 @@ const handleSubmit = async (e) => {
 
   try {
     const response = await createClassApi(payload);
-    console.log("Class created successfully:", response.data);
-    fetchClasses(selectedProject);
+    if (response.status===200){
+    showSuccess("Class created successfully:", response.data);
+    fetchClasses(selectedProject.id);
 
 
     // Reset form & close modal
@@ -48,44 +55,56 @@ const handleSubmit = async (e) => {
       project: "",
     });
     setShowModal(false);
+  }
 
   } catch (error) {
-    const message =
-      error?.response?.data?.detail ||
-      error?.message ||
-      "Something went wrong";
+     console.log("failed to create class:",error)
+    //  showError(error.detail);
 
-    console.error("API Error:", message);
+     showError(
+      error.detail || "Failed to create class"
+     );
+    
   }
 };
-const fetchClasses = async (projectTitle) => {
-  console.log("fetching classes with",projectTitle);
-  if (!projectTitle) return;
+const fetchClasses = async (projectId) => {
+  console.log("Fetching classes with projectId:", projectId);
+
+  if (!projectId) return;
 
   try {
-    const response = await listClassesApi(projectTitle);
+    // Pass projectId directly, NOT inside {}
+    const response = await listClassesApi(projectId);
+    // console.log("Classes API response:", response.data);
+   if (response.status===200){
 
     setClasses(
-      response.data.map((item) => ({
+      (response.data || []).map((item) => ({
         id: item.id,
         name: item.class_name,
         color: item.color,
-        project: item.project_title,
+        project_title: selectedProject?.project_title || "",
         description: item.description,
       }))
     );
+  }
   } catch (error) {
-    console.error(
-      error?.response?.data?.detail || error.message
+    console.error("Fetch classes error:", error);
+    showError(
+      error?.response?.data?.detail ||
+      error?.message ||
+      "Failed to fetch classes"
     );
   }
 };
 
 useEffect(() => {
-  if (selectedProject?.project_title) {
-    fetchClasses(selectedProject.project_title);
+  if (selectedProject?.id) {
+    fetchClasses(selectedProject.id); // pass the ID directly
   }
 }, [selectedProject]);
+
+
 
  const handleEdit = (cls) => {
     setSelectedClass(cls);
@@ -93,7 +112,7 @@ useEffect(() => {
       name: cls.name,
       color: cls.color,
       description: cls.description,
-      project: cls.project,
+      // project: cls.project,
     });
     setShowEditModal(true);
   };
@@ -114,8 +133,9 @@ const handleEditSubmit = async (e) => {
       name:selectedClass.name,
       updates
     });
-
-    console.log("Class updated successfully:", response.data);
+    if (response.status===200){
+    showSuccess("Class updated successfully")
+    // console.log("Class updated successfully:", response.data);
 
     // Update local state/UI
     setClasses(
@@ -127,9 +147,9 @@ const handleEditSubmit = async (e) => {
     setShowEditModal(false);
     setSelectedClass(null);
     setFormData({ name: '', color: '#06b6d4', description: '', project: '' });
-
+  }
   } catch (error) {
-    console.error("Failed to update class:", error?.response?.data || error.message);
+    showError("Failed to update class:", error?.response?.data || error.message);
   }
 };
 
@@ -142,12 +162,12 @@ const handleDelete = (cls) => {
   if (!selectedClass) return;
 
   try {
-    await deleteClassApi({
+    const response=await deleteClassApi({
       id: selectedClass.id
       // OR class_name: selectedClass.name
     });
-
-    console.log("Class deleted successfully");
+    if (response.status===200){
+    showSuccess("Class deleted successfully");
 
   
     setClasses((prev) =>
@@ -156,9 +176,9 @@ const handleDelete = (cls) => {
 
     setShowDeleteModal(false);
     setSelectedClass(null);
-
+  }
   } catch (error) {
-    console.error(
+    showError(
       "Failed to delete class:",
       error?.response?.data || error.message
     );
@@ -177,7 +197,7 @@ const handleDelete = (cls) => {
         </Button>
       }
     >
-      <div className={styles.container}>
+      {/* <div className={styles.container}> */}
         <table className={styles.table}>
           <thead>
             <tr className={styles.tableHeader}>
@@ -204,7 +224,7 @@ const handleDelete = (cls) => {
                   </div>
                 </td>
                 <td className={styles.tableCell}>
-                  <span className={styles.className}>{cls.project}</span>
+                  <span className={styles.className}>{cls.project_title}</span>
                 </td>
                 <td className={styles.tableCell}>
                   <span className={styles.description}>{cls.description}</span>
@@ -251,19 +271,19 @@ const handleDelete = (cls) => {
         )}
 
         {showDeleteModal && (
-          <Modal title="Delete Project" onClose={() => setShowDeleteModal(false)}>
+          <Modal title="Delete Class" onClose={() => setShowDeleteModal(false)}>
             <p className={styles.deleteMessage}>
               Are you sure you want to delete <strong>{selectedClass?.name}</strong>?
             </p>
             <div className={styles.modalActions}>
               <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
               <Button variant="danger" icon="fi-rr-trash" onClick={confirmDelete}>
-                Delete Project
+                Delete Class
               </Button>
             </div>
           </Modal>
         )}
-      </div>
+      {/* </div> */}
     </Layout>
   );
 };

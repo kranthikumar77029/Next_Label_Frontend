@@ -29,12 +29,12 @@
   box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
-.selectText {
+/* .selectText {
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
+} */
 
 .icon {
   color: var(--color-text-tertiary);
@@ -43,7 +43,8 @@
 
 .label {
   font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
+  color: #ffffff;
+  /* color: var(--color-text-tertiary); */
   margin-bottom: var(--spacing-xs);
   font-weight: 500;
 }

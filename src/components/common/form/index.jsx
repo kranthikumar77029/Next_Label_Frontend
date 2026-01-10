@@ -112,22 +112,32 @@ const Form = ({
           error={errors.color}
         />
       )}
-      
-      {mode === "class" && (
-        <Dropdown
-          label="Project"
-          required
-          placeholder="Select Project"
-          value={formData.project}
-          options={projects.map((p) => ({
-            label: p.project_title,
-            value: p.project_title,
-          }))}
-          onChange={(value) =>
-            setFormData((prev) => ({ ...prev, project: value }))
-          }
-        />
-      )}
+{/*       
+    {mode === "class" && (
+      <Dropdown
+        label="Project"
+        required
+        placeholder="Select Project"
+        value={formData.project}
+        options={projects.map((p) => ({
+          label: p.project_title,
+          value: p.id,
+        }))}
+        onChange={(value) => {
+          const selectedProject = projects.find(p => p.id === value);
+
+          console.log("Selected project:", selectedProject);
+
+          setFormData(prev => ({
+            ...prev,
+            project: value,
+            project_title: selectedProject?.project_title || "",
+          }));
+        }}
+      />
+    )} */}
+
+
 
       {/* ---------------- DESCRIPTION ---------------- */}
       {mode !== "member" && (

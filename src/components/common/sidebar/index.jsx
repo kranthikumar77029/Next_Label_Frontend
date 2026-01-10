@@ -122,9 +122,9 @@ const Sidebar = () => {
         </button>
       </div>
 
-      <div className={styles.footer}>
+      {/* <div className={styles.footer}>
         <div className={styles.footerText}>© 2025 NexLabel Craft</div>
-      </div>
+      </div> */}
 
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
