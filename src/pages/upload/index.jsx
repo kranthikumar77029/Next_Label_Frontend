@@ -7,12 +7,13 @@ import { uploadImagesApi } from '@/networking/upload/uploadapi';
 import { useToast } from "@/hooks/use-toast";
 import styles from './styles.module.css';
 import { useProjects } from '@/context/ProjectContext';
-
+import { useProjectImages } from '@/context/ProjectImagesContext';
 const Upload = () => {
   const navigate = useNavigate();
   const { projects, selectedProject, setSelectedProject } = useProjects();
   const { showSuccess, showError,showInfo} = useToast();
-  const [images, setImages] = useState([]);
+ const { uploadedImages: images, setUploadedImages: setImages } = useProjectImages();
+
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -24,6 +25,8 @@ const Upload = () => {
 
   const fileInputRef = useRef(null);
   const folderInputRef = useRef(null);
+
+  
 
   // =================================================================================
   // CLEAR ALL IMAGES + RESET EVERYTHING

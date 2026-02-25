@@ -65,10 +65,28 @@
 .select {
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--select-bg);
+  border: 1px solid var(--select-border);
   border-radius: var(--radius-md);
-  color: var(--color-text-primary);
+  color: var(--select-text);
+  outline: none;
+  cursor: pointer;
+}
+
+/* focus state */
+.select:focus {
+  border-color: var(--select-option-hover);
+}
+
+/* dropdown options */
+.select option {
+  background: var(--select-option-bg);
+  color: var(--select-text);
+}
+
+/* hover (only works in some browsers) */
+.select option:hover {
+  background: var(--select-option-hover);
 }
 .hint {
   font-size: var(--font-size-xs);
@@ -100,6 +118,8 @@
   padding: var(--spacing-sm) var(--spacing-md);
   border-bottom: 1px solid var(--color-border);
   font-size: var(--font-size-sm);
+  vertical-align: middle;
+  white-space: nowrap;
 }
 .status {
   padding: 4px 8px;
@@ -170,14 +190,79 @@
   gap: var(--spacing-md);
 }
 .thWithfilter {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;  
-  /* white-space: nowrap; */
+  gap: 8px;
+  
 }
 
 .filterSelect {
   height: 30px;
   font-size: 12px;
+  width: 120px;
   
+}
+.assignContainer{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:18px;
+  align-items:end;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+}
+
+.label{
+  font-size:13px;
+  font-weight:600;
+  margin-bottom:6px;
+  color:#444;
+}
+
+.remaining{
+  margin-top:6px;
+  font-size:12px;
+  color:#777;
+  display:flex;
+  justify-content:space-between;
+}
+
+.remaining span{
+  font-weight:700;
+  color:#2563eb;
+}
+
+.assignBtn{
+  height:42px;
+  border-radius:10px;
+  font-weight:600;
+}
+.rangeContainer {
+  margin-top: 20px;
+}
+
+.rangeLabel {
+  font-weight: 400;
+  margin-bottom: 8px;
+  display: block;
+  color: #f1f3f6;
+}
+
+.rangeSlider {
+  width: 100%;
+  cursor: pointer;
+  accent-color: #4f46e5;
+}
+
+.rangeSlider:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.rangeValue {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #6b7280;
 }

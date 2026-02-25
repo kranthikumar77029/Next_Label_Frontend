@@ -44,8 +44,8 @@ const ProjectsHub = () => {
   const { showSuccess, showError } = useToast();
   const stats = [
     { label: 'Total Projects', value: totalProjects, icon: 'fi-rr-folder' },
-    { label: 'Images Labeled', value: '3,547', icon: 'fi-rr-picture' },
-    { label: 'Active Projects', value: '3', icon: 'fi-rr-chart-line-up' },
+    { label: 'Images Labeled', value: '0', icon: 'fi-rr-picture' },
+    { label: 'Active Projects', value: '1', icon: 'fi-rr-chart-line-up' },
     // { label: 'Models Trained', value: '8', icon: 'fi-rr-brain' },
   ];
 
@@ -56,22 +56,16 @@ const ProjectsHub = () => {
     try {
       const response = await createProjectApi(formData);
       console.log('kjhffj', response);
-      const { status, statusText } = response;
-      if (status == 200) {
+      // const { status, statusText } = response;
+      if (response.status == 200) {
         fetchProjects();
         showSuccess('Project created successfully');
         setShowModal(null);
         setFormData({ project_title: '', description: '', tags: '' });
       }
     } catch (err) {
-      // const errorMessage =
-      //   err?.response?.data?.detail ??
-      //   err?.response?.data?.message ??
-      //   'Failed to create project';
-
-      // showError(errorMessage);
-      showError(err.detail || "Failed to create Project")
-    }
+  showError(err?.response?.data?.detail || "Failed to create project");
+}
   };
 
   // 🆕 Edit Project
@@ -81,13 +75,15 @@ const ProjectsHub = () => {
     if (!selectedProject) return;
 
     try {
-      await updateProjectApi(selectedProject.id, formData); // send id + updated data
+     const response= await updateProjectApi(selectedProject.id, formData); // send id + updated data
+      if (response.status===200){
       showSuccess('Project updated successfully');
       setProjects((prev) =>
         prev.map((p) =>
           p.id === selectedProject.id ? { ...p, ...formData } : p
         )
       );
+    }
     } catch (err) {
       showError(err?.response?.data?.message || 'Failed to update project');
     }
@@ -105,6 +101,7 @@ const ProjectsHub = () => {
         project_title: selectedProject?.project_title,
       };
       const response = await deleteProjectApi(data);
+        if (response.status===200){
         setProjects((prev) =>
       prev.filter((p) => p.id !== selectedProject.id)
     );
@@ -115,8 +112,9 @@ const ProjectsHub = () => {
       // fetchProjects();
       setShowModal(null);
       setSelectedProject(null);
+  }
     } catch (error) {
-      console.error('error', error);
+       showError(error?.response?.data?.detail || "Failed to delete project");
     }
   };
   //fetch Classes
@@ -169,6 +167,19 @@ const fetchClasses = async (projectId) => {
     const response = await createClassApi(payload);
     if (response.status===200){
     showSuccess("Class created successfully:", response.data);
+    setClasses((prev) => [...prev, response.data]);
+    await fetchProjects(); 
+  //   setProjects((prevProjects) =>
+  //   prevProjects.map((project) =>
+  //     project.id === selectedProject.id
+  //       ? {
+  //           ...project,
+  //           classes: [...(project.classes || []), newClass],
+  //         }
+  //       : project
+  //   )
+  // );
+
     fetchClasses(selectedProject.id);
 
 
@@ -184,7 +195,7 @@ const fetchClasses = async (projectId) => {
 
   } catch (error) {
      console.log("failed to create class:",error)
-    //  showError(error.detail);
+     showError(error.detail);
 
      showError(
       error.detail || "Failed to create class"
@@ -225,12 +236,14 @@ const fetchClasses = async (projectId) => {
      // console.log("Class updated successfully:", response.data);
  
      // Update local state/UI
-     setClasses(
-       classes.map((c) =>
-         c.id === selectedClass.id ? { ...c, ...formData } : c
-       )
-     );
- 
+    setClasses((prev) =>
+    prev.map((c) =>
+      c.id === selectedClass.id
+        ? { ...c, name: formData.name, color: formData.color, description: formData.description }
+        : c
+    )
+  );
+     
      setShowModal(false);
      setSelectedClass(null);
      setFormData({ name: '', color: '#06b6d4', description: '', project: '' });
@@ -261,7 +274,7 @@ const fetchClasses = async (projectId) => {
      setClasses((prev) =>
        prev.filter((c) => c.id !== selectedClass.id)
      );
- 
+     await fetchProjects(); 
      setShowModal(false);
      setSelectedClass(null);
    }
@@ -455,6 +468,7 @@ const fetchClasses = async (projectId) => {
      {showModal ==='classes' && (
       <Modal
         title="Classes"
+        side="right" 
         onClose={() => setShowModal(false)}
       >
         <div className={styles.modalTableWrapper}>

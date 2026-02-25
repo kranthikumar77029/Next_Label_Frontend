@@ -7,8 +7,11 @@ import { Button } from '@/components/ui/button/index.jsx';
 import { useTheme } from '@/provideers/themeprovider';
 import styles from './styles.module.css';
 
-const Sidebar = () => {
+const Sidebar = ({ collapsed, setCollapsed }) => {
+
   const navigate = useNavigate();
+  // const [collapsed, setCollapsed] = useState(false);
+
   const { theme, toggleTheme } = useTheme();
 
   const { logout } = useAuth();
@@ -53,11 +56,11 @@ const Sidebar = () => {
       icon: 'fi-rr-picture',
       label: 'Annotation Viewer',
     },
-    {
-      path: ROUTES.CLASSES,
-      icon: 'fi-rr-palette',
-      label: 'Label Class Manager',
-    },
+    // {
+    //   path: ROUTES.CLASSES,
+    //   icon: 'fi-rr-palette',
+    //   label: 'Label Class Manager',
+    // },
     { path: ROUTES.EXPORT, icon: 'fi-rr-download', label: 'Export Center' },
   ];
 
@@ -68,7 +71,20 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className={styles.sidebar}>
+
+    
+   <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""}`}>
+
+      <div className={styles.topBar}>
+      <button
+        className={styles.menuToggle}
+        onClick={() => setCollapsed(prev => !prev)}
+      >
+    <i className={`fi ${collapsed ? "fi-rr-angle-double-left" : "fi-rr-angle-double-right"}`}></i>
+
+    </button>
+    </div>
+
       <div className={styles.logo}>
         <div className={styles.logoContainer}>
           <img src={snrLogo} alt="SNR Logo" className={styles.logoImage} />

@@ -6,6 +6,14 @@ export const assignTask='team/assign-task'
 
 export const listTasks='team/list-assignments'
 
-export const editMember='team/edit-member'
+// export const editMember='team/edit-member'
 
 export const deleteMember='team/delete-member'
+
+export const getAssigmnetStatsByProject='team/get-assignment-stats'
+
+export const getAssignedRecordsByPerson='team/get-assigned-records'
+
+export const editMember='team/save-edited-assignment'
+
+export const getUnassignedRecords='team/get-unassigned-records'

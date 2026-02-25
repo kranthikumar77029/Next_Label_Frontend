@@ -41,9 +41,9 @@ export const ProjectProvider = ({ children }) => {
 useEffect(() => {
   fetchProjects();
 }, []);
-useEffect(() => {
-  console.log("Projects updated:", projects);
-}, [projects]);
+// useEffect(() => {
+//   console.log("Projects updated:", projects);
+// }, [projects]);
 
   return (
     <ProjectContext.Provider

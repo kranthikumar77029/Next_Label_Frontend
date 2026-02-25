@@ -1,10 +1,14 @@
 import { createContext, useContext, useState } from "react";
 import { listImagesApi } from "@/networking/upload/uploadapi";
+import { getAssigmnetStatsByProjectApi } from "@/networking/team_dashboard/teamapi";
 
 const ProjectImagesContext = createContext();
 
 export const ProjectImagesProvider = ({ children }) => {
   const [images, setImages] = useState([]);
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [assignmentStatsByProject, setAssignmentStatsByProject] = useState({});
+
   const [totalImages, setTotalImages] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -52,20 +56,44 @@ export const ProjectImagesProvider = ({ children }) => {
       }));
     }
   };
+  const fetchAssignmentStats = async (projectId) => {
+  if (!projectId) return;
+
+  try {
+    const res = await getAssigmnetStatsByProjectApi(projectId);
+
+    const data = res?.data;
+
+    setAssignmentStatsByProject(prev => ({
+      ...prev,
+      [projectId]: data
+    }));
+
+  } catch (err) {
+    console.error("Assignment stats error:", err);
+  }
+};
+
 
   return (
-    <ProjectImagesContext.Provider
+   <ProjectImagesContext.Provider
       value={{
         images,
         setImages,
+        uploadedImages,
+        setUploadedImages,
         totalImages,
         setTotalImages,
         loading,
         totalImagesByProject,
         loadingByProject,
         fetchImagesByProject,
+        assignmentStatsByProject,
+        fetchAssignmentStats,
+
       }}
     >
+
       {children}
     </ProjectImagesContext.Provider>
   );

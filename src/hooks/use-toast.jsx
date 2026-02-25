@@ -1,32 +1,39 @@
 // hooks/useToast.jsx
-import { toast } from 'react-toastify';
+import { toast } from "sonner";
 
 const useToast = () => {
-  const config = {
+  const baseOptions = {
     position: 'top-right',
-    autoClose: 3000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    theme: 'colored',
+    duration: 3000,
+    
+    
   };
 
   const showSuccess = (message, options = {}) => {
-    toast.success(message, { ...config, ...options });
+    toast.success(message, { ...baseOptions, ...options });
   };
 
   const showError = (message, options = {}) => {
-    toast.error(message, { ...config, ...options });
+    toast.error(message, { ...baseOptions, ...options });
   };
 
   const showInfo = (message, options = {}) => {
-    toast.info(message, { ...config, ...options });
+    toast(message, { ...baseOptions, ...options });
   };
 
   const showWarning = (message, options = {}) => {
-    toast.warning(message, { ...config, ...options });
+    toast.warning(message, { ...baseOptions, ...options });
   };
+ 
+
+  
+  // const showPromise = (promise, msgs = {}) => {
+  //   toast.promise(promise, {
+  //     loading: msgs.loading || "Loading...",
+  //     success: msgs.success || "Success!",
+  //     error: msgs.error || "Something went wrong",
+  //   });
+  // };
 
   return { showSuccess, showError, showInfo, showWarning };
 };

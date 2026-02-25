@@ -15,6 +15,22 @@ const ProjectCard = ({ project, onEdit, onDelete,onViewClasses }) => {
   fetchImagesByProject,
 } = useProjectImages();
  const [loadingImages, setLoadingImages] = useState(true);
+ const [expanded, setExpanded] = useState(false);
+
+ const [isActive, setIsActive] = useState(() => {
+  if (!project.status) return true; 
+  return project.status.toLowerCase() === "active";
+});
+
+useEffect(() => {
+  if (!project.status) {
+    setIsActive(true);
+  } else {
+    setIsActive(project.status.toLowerCase() === "active");
+  }
+}, [project.status]);
+
+
   // const [loadingClasses, setLoadingClasses] = useState(true);
 useEffect(() => {
   if (project?.id && project?.title) {
@@ -44,14 +60,33 @@ const isLoadingImages = loadingByProject?.[project.id];
             </div>
           </div>
 
-          <StatusBadge
-            status={project.status?.toLowerCase().trim()}
-            text={project.status}
-          />
+        <button
+          className={`${styles.statusToggle} ${
+            isActive ? styles.active : styles.inactive
+          }`}
+          onClick={() => setIsActive(prev => !prev)}
+        >
+          {isActive ? "Active" : "Inactive"}
+        </button>
+
+
         </div>
 
         {/* DESCRIPTION */}
-        <p className={styles.projectDescription}>{project.description}</p>
+     <p className={styles.projectDescription}>
+      {expanded
+        ? project.description
+        : `${project.description.slice(0, 120)}${project.description.length > 120 ? "..." : ""}`}
+
+      {project.description.length > 120 && (
+        <span
+          className={styles.readMore}
+          onClick={() => setExpanded(prev => !prev)}
+        >
+          {expanded ? " Show less" : " Read more"}
+        </span>
+      )}
+    </p>
 
         {/* KPIs */}
         <KPIBox

@@ -9,8 +9,10 @@ const Input = ({
   value,
   onChange,
   error,
+  success,          // ✅ new prop
   required = false,
   icon,
+  rightIcon,
   ...rest
 }) => {
   return (
@@ -24,16 +26,28 @@ const Input = ({
         </div>
       )}
 
-      <input
-        id={name}
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        className={`${styles.input} ${error ? styles.errorInput : ""}`}
-        {...rest}
-      />
+      {/* input + right icon */}
+      <div className={styles.inputContainer}>
+        <input
+          id={name}
+          name={name}
+          type={type}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          className={`${styles.input}
+            ${error ? styles.errorInput : ""}
+            ${success ? styles.successInput : ""}
+          `}
+          {...rest}
+        />
+
+        {rightIcon && (
+          <span className={styles.rightIcon}>
+            {rightIcon}
+          </span>
+        )}
+      </div>
 
       {error && <p className={styles.errorText}>{error}</p>}
     </div>

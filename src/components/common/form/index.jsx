@@ -66,6 +66,7 @@ const Form = ({
   };
 
   const handleSubmit = (e) => {
+    
     e.preventDefault();
     const validationErrors = validateForm();
     setErrors(validationErrors);
@@ -192,24 +193,56 @@ const Form = ({
       )}
       {/* ---------------- ASSIGNED ---------------- */}
       {mode === "member" && (
-        <Input
-          label="Assigned"
-          required
-          name="assigned"
-          type="number"
-          placeholder="50"
-          value={formData.assigned}
-          onChange={(e) => handleChange("assigned", e.target.value)}
-          error={errors.assigned}
-        />
-      )}
+      <Input
+        label="Assigned"
+        required
+        name="image_range"
+        type="number"
+        placeholder="50"
+        value={formData.image_range}
+        onChange={(e) =>
+          handleChange("image_range", e.target.value)
+        }
+        error={errors.image_range}
+      />
+    )}
+ {/* ---------------- UNASSIGNED ---------------- */}
+      {mode === "member" && (
+      <Input
+        label="UnAssigned"
+        name="Unassigned"
+        type="number"
+        placeholder="Unassigned images Data"
+        value={formData.unassigned_count}
+        onChange={(e) =>
+          handleChange("Unassigned", e.target.value)
+        }
+        error={errors.image_range}
+      />
+    )}
+
+      {/*----------------Edited Count---------*/}
+      {mode === "member" && (
+      <Input
+        label="Edited Count"
+        name="edited_count"
+        type="number"
+        placeholder="Enter Edited Count"
+        value={formData.edited_count ?? ""}
+        // min={1}
+        // max={tasksData?.length || 0}
+        onChange={(e) =>
+          handleChange("edited_count", e.target.value)
+        }
+      />
+    )}
      {/* ---------------- ACTIONS ---------------- */}
       <div className={styles.modalActions}>
         <Button variant="secondary" type="button" onClick={onCancel}>
           Cancel
         </Button>
 
-        <Button variant="primary" type="submit" icon="fi-rr-check">
+        <Button variant="primary" type="submit" icon="fi-rr-check" onClick={onSubmit}>
           {submitLabel}
         </Button>
       </div>

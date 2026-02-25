@@ -43,3 +43,12 @@
   align-items: center;
   gap: var(--spacing-xs);
 }
+.description {
+  line-height: 1.5;
+}
+
+.readMore {
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 500;
+}

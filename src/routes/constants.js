@@ -9,7 +9,7 @@ export const ROUTES = {
   HOME: "/projects",
   UPLOAD: "/upload",
   AUTO_LABEL: "/auto-label",
-  ANNOTATE: "/annotate",
+   ANNOTATE: "/annotate/:projectTitle/:projectId",
   MANUAL_LABEL: "/manual-label",
   TEAM_DASHBOARD: "/team",
   TEAM_LABEL: "/team/label",
@@ -18,7 +18,7 @@ export const ROUTES = {
   CLASSES: "/classes",
   EXPORT: "/export",
   FORGOTPASSWORD: "/forgot-password",
-  RESETPASSWORD: "/reset-password",
+  REGISTER: "/register",
   PROJECTIMAGES: "/project-images/:selectedProject/:projectId",
 
 }; 
@@ -35,9 +35,9 @@ export const ROUTE_CONFIG = {
     title: "Forgot Password",
     description:"Forgot password"
   },
-  [ROUTES.RESETPASSWORD]:{
-    title: "Reset Password",
-    description:"Reset password"
+  [ROUTES.REGISTER]:{
+    title: "Register",
+    description:"Register"
   },
 
   [ROUTES.HOME]: {

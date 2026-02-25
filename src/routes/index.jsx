@@ -19,7 +19,7 @@ const Classes = lazy(() => import('../pages/classes/index.jsx'));
 const Export = lazy(() => import('../pages/export/index.jsx'));
 const NotFound = lazy(() => import('../pages/not-found/index.jsx'));
 const ForgotPassword = lazy(()=>import('../pages/auth/forgot/index.jsx'))
-const ResetPassword = lazy(()=>import('../pages/auth/reset/index.jsx'))
+const Register = lazy(()=>import('../pages/auth/register/index.jsx'))
 
 const ProjectImages = lazy(()=>import("@/pages/project-images"))
 
@@ -51,10 +51,10 @@ export const routes = [
     ),
   },
    {
-    path: ROUTES.RESETPASSWORD,
+    path: ROUTES.REGISTER,
     element: (
       <SuspenseWrapper>
-        <ResetPassword />
+        <Register />
       </SuspenseWrapper>
     ),
     errorElement: (

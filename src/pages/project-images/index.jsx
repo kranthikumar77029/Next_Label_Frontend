@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { deleteImageApi } from '@/networking/upload/uploadapi';
+import { deleteImageApi,deleteAllImagesApi } from '@/networking/upload/uploadapi';
 import { useToast } from "@/hooks/use-toast";
 import { ROUTES } from '../../routes/constants';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,7 @@ const ProjectImages = () => {
     try {
       await deleteImageApi(payload);
 
-      showSuccess("Image deleted successfully");
+      showSuccess("Images deleted successfully");
 
       // 🔥 Update context state
       setImages(prev => prev.filter(item => item.id !== img.id));
@@ -60,7 +60,35 @@ const ProjectImages = () => {
     }
   };
 
+  const handleDeleteAll = async (img) => {
+    const confirmDelete = confirm("Are you sure you want to delete All images?");
+    if (!confirmDelete) return;
+
+    const payload = {
+      project_title: selectedProject,
+      project_id: projectId,
+    };
+
+    try {
+      await deleteAllImagesApi(payload);
+
+      showSuccess("Image deleted successfully");
+
+      // 🔥 Update context state
+      setImages([]);
+      setTotalImages(0);
+
+    } catch (error) {
+      showError(
+        error?.response?.data?.message || "Failed to delete image"
+      );
+    }
+  };
+
   if (loading) return <p>Loading images...</p>;
+  console.log("Images from context:", images);
+console.log("Total images:", totalImages);
+
 
   return (
     <div className={styles.container}>
@@ -70,12 +98,16 @@ const ProjectImages = () => {
           className={styles.backBtn}
           onClick={() => navigate(ROUTES.AUTO_LABEL)}
         >
-          <i className="fi-rr-arrow-left" />
+        <i className="fi-rr-caret-left" /> 
         </button>
 
         <h2 className={styles.title}>
           {selectedProject} Images ({totalImages})
         </h2>
+
+        <Button size="big" variant="danger" onClick={handleDeleteAll} >
+          Delete All
+        </Button>
 
         <Button
           icon="fi-rr-arrow-right"

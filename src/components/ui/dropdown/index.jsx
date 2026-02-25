@@ -1,61 +1,74 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import styles from "./styles.module.css";
 
 const Dropdown = ({
   label,
   placeholder = "Select options",
-  value = [],
+  value = "",
   options = [],
   onChange,
   error,
   required = false,
   disabled = false,
   multiple = false,
+  icon, // 👈 ADD THIS
 }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  // useEffect(() => {
-  //   const handler = (e) => {
-  //     if (ref.current && !ref.current.contains(e.target)) {
-  //       setOpen(false);
-  //     }
-  //   };
-  //   document.addEventListener("mousedown", handler);
-  //   return () => document.removeEventListener("mousedown", handler);
-  // }, []);
-
   const toggleValue = (val) => {
     if (value.includes(val)) {
-      onChange(value.filter(v => v !== val));
+      onChange(value.filter((v) => v !== val));
     } else {
       onChange([...value, val]);
     }
   };
 
-  // Single select fallback
+  /* ---------- SINGLE SELECT ---------- */
   if (!multiple) {
     return (
       <div className={styles.wrapper}>
-        {label && <label className={styles.label}>{label}</label>}
+        {label && (
+          <div className={styles.labelRow}>
+            {icon && <span className={styles.labelIcon}>{icon}</span>}
+            <label className={styles.label}>
+              {label} {required && <span className={styles.required}>*</span>}
+            </label>
+          </div>
+        )}
+
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className={styles.selectBox}
+          disabled={disabled}
         >
-          <option value="" disabled>{placeholder}</option>
-          {options.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          <option value="" disabled>
+            {placeholder}
+          </option>
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
         </select>
+
+        {error && <p className={styles.errorText}>{error}</p>}
       </div>
     );
   }
 
-  // Checkbox multi-select
+  /* ---------- MULTI SELECT ---------- */
   return (
     <div className={styles.wrapper} ref={ref}>
-      {label && <label className={styles.label}>{label}</label>}
+      {label && (
+        <div className={styles.labelRow}>
+          {icon && <span className={styles.labelIcon}>{icon}</span>}
+          <label className={styles.label}>
+            {label} {required && <span className={styles.required}>*</span>}
+          </label>
+        </div>
+      )}
 
       <div
         className={styles.selectBox}
@@ -63,15 +76,15 @@ const Dropdown = ({
       >
         {value.length
           ? options
-              .filter(o => value.includes(o.value))
-              .map(o => o.label)
+              .filter((o) => value.includes(o.value))
+              .map((o) => o.label)
               .join(", ")
           : placeholder}
       </div>
 
       {open && (
         <div className={styles.dropdown}>
-          {options.map(opt => (
+          {options.map((opt) => (
             <label key={opt.value} className={styles.option}>
               <input
                 type="checkbox"
@@ -83,6 +96,8 @@ const Dropdown = ({
           ))}
         </div>
       )}
+
+      {error && <p className={styles.errorText}>{error}</p>}
     </div>
   );
 };

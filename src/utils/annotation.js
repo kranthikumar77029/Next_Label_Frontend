@@ -1,18 +1,29 @@
 // Shared annotation utilities
 
+
+
+
 /**
  * Get mouse coordinates relative to canvas with proper scaling
  */
-export const getMousePos = (canvas, evt) => {
+/**
+ * Get mouse coordinates in CSS pixels
+ * (Canvas is already DPR-scaled via ctx.setTransform)
+ */
+export const getMousePos = (canvas, e) => {
   if (!canvas) return { x: 0, y: 0 };
+
   const rect = canvas.getBoundingClientRect();
+
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
+
   return {
-    x: (evt.clientX - rect.left) * scaleX,
-    y: (evt.clientY - rect.top) * scaleY,
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY,
   };
 };
+
 
 /**
  * Return which resize handle is hit or null

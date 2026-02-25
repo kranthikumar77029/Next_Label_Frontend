@@ -58,9 +58,11 @@ const ManualLabel = () => {
           description={project.description}
           tags={project.tags}
           date={project.created_at}
-          onRun={() => setShowModal(true)}
+        onRun={() =>
+    navigate(`/annotate/${project.project_title}/${project.id}`)
+  }
           buttonText="Run Manual Labeling"
-          buttonIcon="fi-rr-magic-wand"
+          buttonIcon="fi-rr-edit"
           onPressLabelCard={()=>navigate(`/project-images/${project.project_title}/${project.id}`)}
         />
           ))}

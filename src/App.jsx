@@ -4,8 +4,10 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import { ProjectProvider } from "./context/ProjectContext.jsx";
 import { routes } from "./routes/index.jsx";
 import { ThemeProvider } from "./provideers/themeprovider.jsx";
-import { ToastContainer } from 'react-toastify';
+import { Toaster } from "sonner";
+
 import { ProjectImagesProvider } from "./context/ProjectImagesContext.jsx";
+import { TeamMembersProvider } from "./context/TeamMembers.jsx";
  
  
 
@@ -23,18 +25,18 @@ function App() {
   return (
     
       <BrowserRouter>
-      <ToastContainer/>
+      <Toaster richColors />
       <AuthProvider>
         <ProjectProvider>
           <ThemeProvider>
             <ProjectImagesProvider>
-              
-        <AppRoutes />
-        
-        </ProjectImagesProvider>
-        </ThemeProvider>
+               <TeamMembersProvider>
+                <AppRoutes />
+               </TeamMembersProvider>
+            </ProjectImagesProvider>
+         </ThemeProvider>
         </ProjectProvider>
-        </AuthProvider>
+      </AuthProvider>
       </BrowserRouter>
    
   );

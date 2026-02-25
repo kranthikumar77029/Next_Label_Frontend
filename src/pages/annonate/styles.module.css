@@ -5,7 +5,7 @@
 }
 
 .sidebar {
-  width: 300px;
+  width: 250px;
   background: var(--color-background-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -168,6 +168,14 @@
   min-height: 500px;
 }
 
+.imagePickerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
 .canvasWrapper {
   width: 100%;
   height: 100%;
@@ -175,18 +183,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: auto;
-  background: 
-    repeating-conic-gradient(var(--color-surface) 0% 25%, transparent 0% 50%) 
+  overflow: auto; /* enable scroll when zoomed */
+  background:
+    repeating-conic-gradient(var(--color-surface) 0% 25%, transparent 0% 50%)
     50% / 20px 20px;
 }
 
+
 .annotationCanvas {
-  max-width: 100%;
-  max-height: 100%;
-  cursor: crosshair;
   display: block;
   user-select: none;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .canvasWrapper[data-mode="edit"] .annotationCanvas {
@@ -347,4 +355,107 @@
   display: flex;
   gap: var(--spacing-md);
   justify-content: flex-end;
+}
+/* .imagePickerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+} */
+
+.imagePickerItem {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.imagePickerItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+.imageThumbnail {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #f3f4f6;
+}
+
+.imageName {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.imagePickerItem:hover {
+  background: #f9fafb;
+}
+.canvasStage {
+  width: 100%;
+  height: 500px;
+   position: relative;
+  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.canvasStage canvas {
+  transform-origin: center center;
+}
+.canvasStage {
+  position: relative;
+}
+
+.zoomControls {
+  position: absolute;
+  top: 50%;
+  right: 14px; 
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+
+
+.zoomControls button {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(0,0,0,0.65);
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.zoomControls button:hover {
+  background: rgba(0,0,0,0.9);
+  transform: scale(1.05);
+}
+/* .canvasRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+} */
+.indexInput {
+  width: 60px;
+  text-align: center;
+  padding: 4px;
 }

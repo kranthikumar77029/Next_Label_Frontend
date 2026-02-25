@@ -43,3 +43,11 @@
   padding: var(--spacing-xl);
   overflow-y: auto;
 }
+.main {
+  margin-left: 280px;
+  transition: margin-left .25s ease;
+}
+
+.mainCollapsed {
+  margin-left: 72px;
+}

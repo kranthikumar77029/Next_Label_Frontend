@@ -12,7 +12,7 @@
 }
 
 .logo {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -248,4 +248,41 @@
 
 .themeIcon {
   font-size: 18px;
+}
+.sidebar {
+  width: 280px;
+  transition: all 0.3s ease;
+}
+
+.collapsed {
+  width: 80px;
+}
+
+/* hide text when collapsed */
+.collapsed span {
+  display: none;
+}
+
+/* center icons */
+.collapsed .navItem {
+  justify-content: center;
+}
+.collapsed .logo {
+  display: none;
+}
+.topBar {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.menuToggle {
+  font-size: 25px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: aqua;
 }

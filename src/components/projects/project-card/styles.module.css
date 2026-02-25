@@ -71,7 +71,7 @@
   font-weight: 500;
 }
 
-.statusBadge {
+/* .statusBadge {
   padding: 6px 12px;
   border-radius: var(--radius-md);
   font-size: var(--font-size-xs);
@@ -90,6 +90,29 @@
   height: 6px;
   border-radius: 50%;
   background: currentColor;
+} */
+.statusToggle {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.active {
+  background-color: #22c55e;
+  color: white;
+}
+
+.inactive {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.statusToggle:hover {
+  opacity: 0.85;
 }
 
  
@@ -121,4 +144,13 @@
 }
 .projectActions :last-child {
   margin-left: auto;
+}
+.projectDescription {
+  line-height: 1.5;
+}
+
+.readMore {
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 500;
 }

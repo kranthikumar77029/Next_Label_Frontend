@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Sidebar } from "@/components/common/sidebar/index.jsx";
 import { ProjectSelector } from "../project-selector/index.jsx";
 import styles from "./styles.module.css";
@@ -12,13 +13,17 @@ const Layout = ({
 }) => {
    
   const { projects, selectedProject, setSelectedProject } = useProjects();
+  const [collapsed, setCollapsed] = useState(false);
+
   const selectedValue = selectedProject?.id || "";
 ;
   return (
     <div className={styles.layout}>
-      <Sidebar />
+      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      <main className={styles.main}>
+
+     <main className={`${styles.main} ${collapsed ? styles.mainCollapsed : ""}`}>
+
         <header className={styles.header}>
           <div className={styles.headerLeft}>
             <h1 className={styles.pageTitle}>{pageTitle}</h1>

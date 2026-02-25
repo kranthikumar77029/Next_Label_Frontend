@@ -20,15 +20,11 @@ const createAxiosInstance = (baseURL) => {
     }
   );
 
-  instance.interceptors.response.use(
-    (response) => response,
-    (error) =>
-      Promise.reject(
-        (error.response && error.response.data) || {
-          message: 'Something went wrong',
-        }
-      )
-  );
+ instance.interceptors.response.use(
+  (response) => response,
+  (error) => Promise.reject(error)
+);
+
 
   return instance;
 };
@@ -41,12 +37,14 @@ const uploadAndManageImagesApi = createAxiosInstance(imagesBaseURL);
 const teamApi=createAxiosInstance(baseURL);
 const classApi=createAxiosInstance(baseURL);
 const generate_pseudo_labelsApi=createAxiosInstance(baseURL)
- 
-
+const annotationsApi=createAxiosInstance(baseURL);
+const exportApi=createAxiosInstance(baseURL)
 export {
   projectsApi,
   uploadAndManageImagesApi,
   teamApi,
   classApi,
-  generate_pseudo_labelsApi
+  generate_pseudo_labelsApi,
+  annotationsApi,
+  exportApi
 };

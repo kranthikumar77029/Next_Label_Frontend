@@ -5,7 +5,7 @@ import { Modal } from '@/components/common/modal';
 import { Form } from '@/components/common/form';
 import { useProjects } from '@/context/ProjectContext';
 // import { useClasses } from '@/context/classesContext';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/toast/use-toast';
 import { createClassApi,listClassesApi,updateClassApi,deleteClassApi} from '@/networking/class-manager/classapi';
 import styles from './styles.module.css';
 

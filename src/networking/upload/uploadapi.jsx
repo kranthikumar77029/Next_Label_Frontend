@@ -19,3 +19,15 @@ export const deleteImageApi= async (params = {})=>{
     params,
   });
 };
+
+export const deleteImageWithLabelApi= async (params={})=>{
+  return uploadAndManageImagesApi.delete(endPoints.deleteImageWithLabel,{
+    params,
+  })
+}
+
+export const deleteAllImagesApi= async(params={})=>{
+  return uploadAndManageImagesApi.delete(endPoints.deleteAllImages,{
+    params
+  })
+}

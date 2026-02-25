@@ -35,57 +35,62 @@ const AutoLabel = () => {
   // Handle progress simulation
 const runAutoLabel = async (formData) => {
   if (!selectedProject?.id) return;
-  if (
-    formData.modelType === "custom" &&
-    !formData.customModel?.trim()
-  ) {
+
+  if (formData.modelType === "custom" && !formData.customModel?.trim()) {
     showError("Please enter custom model name");
     return;
   }
-const payload = {
+
+  const payload = {
     model_path:
-    formData.modelType === "custom"
-      ? `${formData.customModel.toLowerCase()}.pt`
-      : formData.modelType,
+      formData.modelType === "custom"
+        ? `${formData.customModel.toLowerCase()}.pt`
+        : formData.modelType,
     project_id: selectedProject.id,
     project_title: selectedProject.project_title,
     conf_threshold: formData.confidence,
     iou_threshold: formData.iou_confidence,
     filter_classes: formData.classes.map((_, index) => index),
-    // filter_classes: Array.isArray(formData.classes)
-    // ? formData.classes
-    // : formData.classes
-    //     .split(',')
-    //     .map(c => c.trim())
-    //     .filter(Boolean),
-    dbscan_eps:formData.dbscan_eps,
+    dbscan_eps: formData.dbscan_eps,
     dbscan_min_samples: formData.dbscan_min_samples,
   };
 
-  console.log("Auto label payload:", payload);
+  setProcessing(true);
+  setProgress(0);
+  setLogs([]);
+
+  let apiSuccess = false;
 
   try {
-    setProcessing(true);
-    setProgress(0);
-    setLogs([]);
+    const response = await psuedo_labelsApi(payload);
 
-    // ✅ API CALL
-    const response=await psuedo_labelsApi(payload);
-    if(response.status===200){
-     showSuccess("Autolabelling SuccessFull")
-    
+    if (response.status === 200) {
+      showSuccess("Autolabelling Successful");
+      apiSuccess = true;
+    } else {
+      throw new Error("API failed");
     }
   } catch (error) {
     setProcessing(false);
     showError(
-      error.detail||
-      "Auto labeling failed"
+      error?.response?.data?.detail ||
+      error?.message ||
+      "Auto Labelling failed"
     );
-    return;
+    return; 
   }
-  // Continue with progress simulation
-    simulateProgress(formData);
+
+  //  simulateProgress runs OUTSIDE api try/catch
+  if (apiSuccess) {
+    try {
+      await simulateProgress(formData);
+    } catch (e) {
+      console.error("Progress simulation failed:", e);
+      setProcessing(false);
+    }
+  }
 };
+
 
 
 const simulateProgress = (formData) => {

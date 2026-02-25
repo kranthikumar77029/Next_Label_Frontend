@@ -30,3 +30,9 @@
   font-size: 12px;
   text-align: center;
 }
+.rightIcon {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  color: #666;
+}
