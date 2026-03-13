@@ -10,6 +10,7 @@ const ProjectsHub = lazy(() => import('../pages/projects-hub/index.jsx'));
 const Upload = lazy(() => import('../pages/upload/index.jsx'));
 const AutoLabel = lazy(() => import('../pages/auto-label/index.jsx'));
 const Annotate = lazy(() => import('../pages/annonate/index.jsx'));
+const ManualAnnotation=lazy(()=>import ('../pages/manual-annotation/index.jsx'))
 const ManualLabel = lazy(() => import('../pages/manual-label/index.jsx'));
 const TeamDashboard = lazy(() => import('../pages/team/index.jsx'));
 const TeamLabel = lazy(() => import('../pages/team-label/index.jsx'));
@@ -20,8 +21,8 @@ const Export = lazy(() => import('../pages/export/index.jsx'));
 const NotFound = lazy(() => import('../pages/not-found/index.jsx'));
 const ForgotPassword = lazy(()=>import('../pages/auth/forgot/index.jsx'))
 const Register = lazy(()=>import('../pages/auth/register/index.jsx'))
-
 const ProjectImages = lazy(()=>import("@/pages/project-images"))
+const Analytics=lazy(()=>import("@/pages/analytics/index.jsx"))
 
 export const routes = [
    {
@@ -121,6 +122,17 @@ export const routes = [
     
   },
   {
+    path: ROUTES.ANALYTICS,
+    element: (
+   
+        <SuspenseWrapper>
+          <Analytics />
+        </SuspenseWrapper>
+      
+    ),
+    
+  },
+  {
     path: ROUTES.TEAM_DASHBOARD,
     element: (
      
@@ -175,6 +187,18 @@ export const routes = [
     ),
   
   },
+  {
+    path: ROUTES.MANUAL_ANNOTATION,
+    element: (
+    
+        <SuspenseWrapper>
+          <ManualAnnotation />
+        </SuspenseWrapper>
+    
+    ),
+  
+  },
+  
   {
     path: ROUTES.CLASSES,
     element: (

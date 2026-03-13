@@ -30,6 +30,22 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       label: 'Auto Labeling Studio',
     },
     {
+      path: ROUTES.ANNOTATE,
+      icon: 'fi-rr-picture',
+      label: 'Annotation Viewer',
+    },
+ {
+  path: ROUTES.ANALYTICS,
+  icon: "fi-rr-stats",
+  label: "Analytics"
+},
+    
+     {
+      path: ROUTES.REVIEW,
+      icon: 'fi-rr-briefcase',
+      label: 'Reviewer Panel',
+    },
+    {
       path: ROUTES.MANUAL_LABEL,
       icon: 'fi-rr-edit',
       label: 'Manual Annotation Studio',
@@ -40,28 +56,15 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       icon: 'fi-rr-users',
       label: 'Team Dashboard',
     },
-    {
-      path: ROUTES.REVIEW,
-      icon: 'fi-rr-briefcase',
-      label: 'Reviewer Panel',
-    },
+   
     {
       path: ROUTES.ACTIVITY,
       icon: 'fi-rr-bell',
       label: 'Activity Tracking',
     },
 
-    {
-      path: ROUTES.ANNOTATE,
-      icon: 'fi-rr-picture',
-      label: 'Annotation Viewer',
-    },
-    // {
-    //   path: ROUTES.CLASSES,
-    //   icon: 'fi-rr-palette',
-    //   label: 'Label Class Manager',
-    // },
-    { path: ROUTES.EXPORT, icon: 'fi-rr-download', label: 'Export Center' },
+    
+  { path: ROUTES.EXPORT, icon: 'fi-rr-download', label: 'Export Center' },
   ];
 
   const handleLogout = () => {

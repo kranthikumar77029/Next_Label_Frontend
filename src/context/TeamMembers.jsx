@@ -17,9 +17,10 @@ export const TeamMembersProvider = ({ children }) => {
   }, []);
 
   const annotators = members.filter(m => m.role === "annotator");
+  const reviewers=members.filter(m=>m.role ==="reviewer");
 
   return (
-    <TeamMembersContext.Provider value={{ members, annotators, fetchMembers }}>
+    <TeamMembersContext.Provider value={{ members, annotators,reviewers, fetchMembers }}>
       {children}
     </TeamMembersContext.Provider>
   );

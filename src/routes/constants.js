@@ -9,7 +9,8 @@ export const ROUTES = {
   HOME: "/projects",
   UPLOAD: "/upload",
   AUTO_LABEL: "/auto-label",
-   ANNOTATE: "/annotate/:projectTitle/:projectId",
+  ANNOTATE: "/annotate/:projectTitle/:projectId",
+  MANUAL_ANNOTATION:"/manual_annotation/:projectTitle/:projectId",
   MANUAL_LABEL: "/manual-label",
   TEAM_DASHBOARD: "/team",
   TEAM_LABEL: "/team/label",
@@ -20,7 +21,7 @@ export const ROUTES = {
   FORGOTPASSWORD: "/forgot-password",
   REGISTER: "/register",
   PROJECTIMAGES: "/project-images/:selectedProject/:projectId",
-
+  ANALYTICS:"/analytics",
 }; 
 
 /**
@@ -56,9 +57,17 @@ export const ROUTE_CONFIG = {
     title: "Annotation Viewer",
     description: "View and edit annotations",
   },
+  [ROUTES.MANUAL_ANNOTATION]:{
+    title: "Manual Annotation Viewer",
+    description:"View and edit annotations",
+  },
   [ROUTES.MANUAL_LABEL]: {
     title: "Manual Annotation Studio",
     description: "Manually annotate and refine labels",
+  },
+   [ROUTES.ANALYTICS]: {
+    title: "Analytics",
+    description: "See the Labeling Insights",
   },
   [ROUTES.TEAM_DASHBOARD]: {
     title: "Team Dashboard",

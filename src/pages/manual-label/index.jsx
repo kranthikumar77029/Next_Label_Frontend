@@ -32,7 +32,7 @@ const ManualLabel = () => {
         <Button
           icon="fi-rr-picture"
           onClick={() =>
-            navigate(`${ROUTES.ANNOTATE}?projectId=demo&batchId=general&total=0&done=0`)
+            navigate(`${ROUTES.MANUAL_ANNOTATION}?projectId=demo&batchId=general&total=0&done=0`)
           }
         >
           Open Annotation Canvas
@@ -59,7 +59,7 @@ const ManualLabel = () => {
           tags={project.tags}
           date={project.created_at}
         onRun={() =>
-    navigate(`/annotate/${project.project_title}/${project.id}`)
+    navigate(`/manual_annotation/${project.project_title}/${project.id}`)
   }
           buttonText="Run Manual Labeling"
           buttonIcon="fi-rr-edit"

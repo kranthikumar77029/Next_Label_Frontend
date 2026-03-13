@@ -54,3 +54,219 @@
 .counter {
   color: var(--color-text-secondary);
 }
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  min-width: 0;
+}
+
+.canvas {
+  flex: 1;
+  background: var(--color-background-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  min-height: 500px;
+}
+.canvasWrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto; /* enable scroll when zoomed */
+  background:
+    repeating-conic-gradient(var(--color-surface) 0% 25%, transparent 0% 50%)
+    50% / 20px 20px;
+}
+
+
+.annotationCanvas {
+  display: block;
+  user-select: none;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.canvasWrapper[data-mode="edit"] .annotationCanvas {
+  cursor: default;
+}
+
+.canvasWrapper[data-mode="draw"] .annotationCanvas {
+  cursor: crosshair;
+}
+
+.annotationImage {
+  display: none;
+}
+
+.imageLoader {
+  position: absolute;
+  top: 50%;
+  /* left: 50%; */
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--color-text-tertiary);
+  z-index: 1;
+}
+
+.imageLoader i {
+  display: block;
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+.navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--color-background-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.imageCounter {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  min-width: 120px;
+  text-align: center;
+}
+.canvasStage {
+  width: 100%;
+  height: 500px;
+   position: relative;
+  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.canvasStage canvas {
+  transform-origin: center center;
+}
+.canvasStage {
+  position: relative;
+}
+
+.zoomControls {
+  position: absolute;
+  top: 50%;
+  right: 14px; 
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+
+
+.zoomControls button {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(0,0,0,0.65);
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.zoomControls button:hover {
+  background: rgba(0,0,0,0.9);
+  transform: scale(1.05);
+}
+/* .canvasRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+} */
+.indexInput {
+  width: 60px;
+  text-align: center;
+  padding: 4px;
+}
+.canvasStage {
+  position: relative;
+  transform-origin: top left;
+}
+
+.annotationCanvas {
+  display: block;
+  max-width: 100%;
+}
+
+.zoomControls {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+.imageLoader {
+  position: absolute;
+  /* inset: 0; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* background: #000; */
+  color: white;
+}
+.statusChip {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  /* color:#e6f4ff; */
+}
+
+.labeled {
+  background: #1677ff;
+  color: #e6f4ff;  
+}
+
+.approved {
+  background: #1f9d55;
+  color: #e6f4ff;
+}
+
+.rejected {
+  background: #d64545;
+  color: #e6f4ff;
+}
+
+.pending {
+  background: #d48806;
+  color: #e6f4ff;
+}
+
+.leftNav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rejectionInline {
+  font-size: 13px;
+  color: #f60202;
+  background: #ffeaea;
+  border: 1px solid #ffcdd2;
+  padding: 4px 10px;
+  border-radius: 6px;
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

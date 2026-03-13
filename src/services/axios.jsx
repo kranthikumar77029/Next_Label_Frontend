@@ -38,7 +38,9 @@ const teamApi=createAxiosInstance(baseURL);
 const classApi=createAxiosInstance(baseURL);
 const generate_pseudo_labelsApi=createAxiosInstance(baseURL)
 const annotationsApi=createAxiosInstance(baseURL);
-const exportApi=createAxiosInstance(baseURL)
+const exportApi=createAxiosInstance(baseURL);
+const activityApi=createAxiosInstance(baseURL);
+const reviewApi=createAxiosInstance(baseURL);
 export {
   projectsApi,
   uploadAndManageImagesApi,
@@ -46,5 +48,7 @@ export {
   classApi,
   generate_pseudo_labelsApi,
   annotationsApi,
-  exportApi
+  exportApi,
+  activityApi,
+  reviewApi
 };

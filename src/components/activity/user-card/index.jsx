@@ -2,7 +2,7 @@ import styles from './styles.module.css';
 import ProgressBar from '@/components/ui/progress-bar';
 
 const UserCard = ({ user, project }) => {
-  const { assigned = 0, labeled = 0, name } = user;
+  const { assigned = 0, labeled = 0, name,role } = user;
   const pending = Math.max(0, assigned - labeled);
   const pct = assigned ? Math.round((labeled / assigned) * 100) : 0;
 
@@ -23,7 +23,7 @@ const UserCard = ({ user, project }) => {
         </div>
         <div className={styles.titleBlock}>
           <div className={styles.userName}>{name}</div>
-          <div className={styles.caption}>Project: {project}</div>
+          <div className={styles.caption}>Role: {role}</div>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/common/layout';
 import { Input } from '@/components/ui/input';
+import { Dropdown } from '@/components/ui/dropdown';
 import { exportapi } from '@/networking/export/exportapi';
 import { useProjects } from "@/context/ProjectContext";
 import { useProjectImages } from '@/context/ProjectImagesContext';
@@ -41,7 +42,7 @@ const Export = () => {
 
   const { selectedProject } = useProjects();
   const { totalImagesByProject, fetchImagesByProject } = useProjectImages();
-
+  const [format,setFormat]=useState('');
   const [exporting, setExporting] = useState(false);
   const [exportLog, setExportLog] = useState([]);
   const [downloadUrl, setDownloadUrl] = useState(null);
@@ -100,7 +101,8 @@ const Export = () => {
       test_split: splits.test,
       include_images: options.include_images,
       include_annotations: options.include_annotations,
-      include_classes: options.include_classes,
+      // include_classes: options.include_classes,
+      export_format: format || "yolo"
     };
 
     setExporting(true);
@@ -148,6 +150,10 @@ const Export = () => {
     }
   };
 
+//   if (options.include_annotations && !format) {
+//   alert("Please select annotation export format");
+//   return;
+// }
 
   // --------------------------------------------
   // UI
@@ -213,14 +219,24 @@ const Export = () => {
               }
             />
 
-            <Checkbox
+            {/* <Checkbox
               label="Include Class Labels File"
               checked={options.include_classes}
               onChange={(e) =>
                 setOptions({ ...options, include_classes: e.target.checked })
               }
-            />
-
+            /> */}
+          <Dropdown
+            label="Select Format"
+            placeholder="Select format"
+            value={format}
+            options={[
+              { label: "YOLO (.txt)", value: "yolo" },
+              { label: "JSON", value: "coco" },
+            ]}
+            disabled={!options.include_annotations}
+            onChange={(value) => setFormat(value)}
+          />
           </div>
 
 

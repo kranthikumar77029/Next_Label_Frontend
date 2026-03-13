@@ -294,7 +294,7 @@ const fetchClasses = async (projectId) => {
         <Button
           icon="fi-rr-plus"
           onClick={() => {
-            setSelectedProject(null); // important
+            // setSelectedProject(null); // important
             setFormData({
               project_title: '',
               description: '',
@@ -328,13 +328,13 @@ const fetchClasses = async (projectId) => {
           </div>
 
           {/* Dropdown Filter */}
-          <div className={styles.dropdown}>
+          {/* <div className={styles.dropdown}>
             <select value={filter} onChange={(e) => setFilter(e.target.value)}>
               <option value="All">All Projects</option>
               <option value="Active">Active</option>
               <option value="In-active">In-active</option>
             </select>
-          </div>
+          </div> */}
         </div>
 
         {/* Projects Grid */}

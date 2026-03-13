@@ -58,3 +58,9 @@
   overflow-y: auto;   /* ✅ only fields scroll */
   padding-right: 4px; /* prevents scrollbar overlap */
 }
+.modelRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}

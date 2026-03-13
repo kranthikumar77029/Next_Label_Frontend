@@ -22,7 +22,7 @@ const ConfigForm = ({ formData,setFormData }) => {
 //   dbscan_min_samples: 0,
 // });
 useEffect(() => {
-  console.log("Classes effect fired:", selectedProject);
+  // console.log("Classes effect fired:", selectedProject);
 
   if (selectedProject?.classes?.length > 0) {
     const classNames = selectedProject.classes.map(
@@ -49,102 +49,119 @@ const classOptions = selectedProject?.classes?.map(cls => ({
 })) || [];
 
 
-useEffect(() => {
-  console.log("📝 Form Data:", formData);
-}, [formData]);
+// useEffect(() => {
+//   console.log("📝 Form Data:", formData);
+// }, [formData]);
 
-const MODEL_TYPE_OPTIONS=[
-  { value:"yolov8n.pt",  label: "yolov8n"},
-  { value:"yolov8s.pt",  label:"yolov8s"},
-  { value:"yolov8m.pt",  label:"yolov8m"},
-  { value:"yolov8l.pt",  label:"yolov8l"},
-  { value:"yolov8x.pt",  label:"yolov8x"},
-  { value:"yolo11n.pt",  label:"yolov11n"},
-  { value:"yolo11s.pt",  label:"yolov11s"},
-  { value:"yolo11m.pt",  label:"yolov11m"},
-  { value:"yolo11l.pt",  label:"yolov11l"},
-  { value:"yolo11x.pt",  label:"yolov11x"},
+const MODEL_OPTIONS = [
+  { value: "yolo", label: "YOLO" },
   { value: "custom", label: "Custom" }
-]
+];
+
+const VERSION_OPTIONS = [
+  { value: "v8", label: "v8" },
+  { value: "v11", label: "v11" },
+  { value: "v26", label: "v26"}
+];
+
+const MODEL_SIZE_OPTIONS = [
+  { value: "n", label: "Nano (n)" },
+  { value: "s", label: "Small (s)" },
+  { value: "m", label: "Medium (m)" },
+  { value: "l", label: "Large (l)" },
+  { value: "x", label: "XL (x)" }
+];
 
 
+useEffect(() => {
+
+  if (formData.model === "yolo") {
+    const modelName = `yolo${formData.version || "v8"}${formData.size || "n"}.pt`;
+
+    setFormData(prev => ({
+      ...prev,
+      modelType: modelName
+    }));
+  }
+
+  if (formData.model === "custom" && formData.customModel) {
+    const modelName = `${formData.customModel.toLowerCase().replace(/\.pt$/, "")}.pt`;
+
+    setFormData(prev => ({
+      ...prev,
+      modelType: modelName
+    }));
+  }
+
+}, [formData.model, formData.version, formData.size, formData.customModel]);
   return (
     <>
-      {/* Model Type */}
-      <div className={styles.formGroup}>
-        <Dropdown
-          label="Model Type"
-          value={formData.modelType}
-           onChange={(value) =>
-            setFormData(prev => ({
-              ...prev,
-              modelType: value,
-              // clear custom model if not custom
-              customModel: value === "custom" ? prev.customModel : "",
-            }))
-          }
-           options={MODEL_TYPE_OPTIONS}
-        />
-     {formData.modelType === "custom" && (
-      <div className={styles.formGroup}>
-        <Input
-          label="Custom Model Name"
-          placeholder="Enter model name"
-          value={formData.customModel || ""}
-          onChange={(e) => {
-            const value = e.target.value;
+  <div className={styles.modelRow}>
+  
+  <div className={styles.formGroup}>
+    <Dropdown
+      label="Model"
+      value={formData.model}
+      options={MODEL_OPTIONS}
+      onChange={(value) =>
+        setFormData(prev => ({
+          ...prev,
+          model: value
+        }))
+      }
+    />
+  </div>
 
-            setFormData(prev => ({
-              ...prev,
-              customModel: value,
-            }));
-          }}
-        />
-      </div>
-    )}
+  {formData.model !== "custom" && (
+    <div className={styles.formGroup}>
+      <Dropdown
+        label="Version"
+        value={formData.version }
+        options={VERSION_OPTIONS}
+        onChange={(value) =>
+          setFormData(prev => ({
+            ...prev,
+            version: value
+          }))
+        }
+      />
+    </div>
+  )}
 
+  {formData.model !== "custom" && (
+    <div className={styles.formGroup}>
+      <Dropdown
+        label="Model Size"
+        value={formData.size}
+        options={MODEL_SIZE_OPTIONS}
+        onChange={(value) =>
+          setFormData(prev => ({
+            ...prev,
+            size: value
+          }))
+        }
+      />
+    </div>
+  )}
 
-      </div>
-
-      {/*Image folder */}
-      {/* <div className={styles.formGroup}>
-        <Dropdown
-          label="Image_folder"
-          required
-          placeholder="Select folder"
-          value={formData.imageFolder}
-          options={projects.map((p) => ({
-            label: p.project_title,
-            value: p.project_title,
-          }))}
-          onChange={(value) => {
-            const project = projects.find(p => p.project_title === value);
-            if (project) setSelectedProject(project);
-            setFormData(prev => ({ ...prev, imageFolder: value }));
-          }}
-        />
-
-      </div> */}
+  </div>
+    {/* Custom Modal*/}
+   {formData.model === "custom" && (
+  <div className={styles.formGroup}>
+    <Input
+      label="Custom Model Name"
+      placeholder="Enter model name"
+      value={formData.customModel || ""}
+      onChange={(e) =>
+        setFormData(prev => ({
+          ...prev,
+          customModel: e.target.value
+        }))
+      }
+    />
+  </div>
+)}
      
-      {/*Output folder*/}
-      {/* <div className={styles.formGroup}>
-          <Dropdown
-            label="Output_folder"
-            required
-            placeholder="Select folder"
-            value={formData.outputFolder}
-            options={projects.map((p) => ({
-              label: p.project_title,
-              value: p.project_title, 
-            }))}
-            onChange={(value) => {
-            const project = projects.find(p => p.project_title === value);
-            if (project) setSelectedProject(project);
-            setFormData(prev => ({ ...prev, outputFolder: value }));
-          }}
-          />
-        </div> */}
-
       {/* Class Description */}
     <div className={styles.formGroup}>
       <Dropdown

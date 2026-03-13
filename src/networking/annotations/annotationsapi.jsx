@@ -29,10 +29,18 @@ export const getCurrentImageIndexApi=async(project_id,member_id)=>{
     params:{project_id,member_id}
   })
 }
-export const listSpecifiedImagesApi=async(member_id,project_id,start_index)=>{
+export const listSpecifiedImageApi=async(member_id,project_id,start_index)=>{
   return annotationsApi.get(endPoints.list_specified_images,{
     params:{
       member_id,project_id,start_index
+    }
+  })
+}
+
+export const list_assigned_with_labelsApi=async(project_id,member_id,status,active_index)=>{
+  return annotationsApi.get(endPoints.list_assigned_with_labels,{
+    params:{
+      project_id,member_id,status,active_index
     }
   })
 }

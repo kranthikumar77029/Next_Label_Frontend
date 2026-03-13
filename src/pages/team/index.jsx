@@ -27,10 +27,12 @@ const Team = () => {
   const [editedTasks,setEditedTasks]=useState([]);
   const [assign, setAssign] = useState({
   project_id: '',
-  member_id: '',
+  annotator_id: "",
+  reviewer_id: "",
   image_range: '',
 });
 const stats = assignmentStatsByProject[assign.project_id];
+const noImagesAvailable = !stats || stats.next_start_index === null;
 
 
   const [members, setMembers] = useState([]);
@@ -69,35 +71,57 @@ const stats = assignmentStatsByProject[assign.project_id];
   };
 
 const tableMembers = useMemo(() => {
-  return members.map(member => {
+
+  const rows = [];
+
+  members.forEach(member => {
+
     const memberTasks = assignments.filter(
-      a => a.member_id === member.id
+      a => String(a.member_id) === String(member.id)
     );
 
-    const assigned = memberTasks.reduce(
-      (sum, t) => sum + getRangeCount(t.image_range),
-      0
-    );
+    // If no assignment → show unassigned row
+    if (memberTasks.length === 0) {
 
-    return {
-      id: member.id,
-      member_id: member.id,
-      name: member.name,
-      role: member.role,
-      project_title:
-        memberTasks.length > 0
-          ? memberTasks.map(t => t.project_title).join(", ")
-          : "Unassigned",
-      
-      project_id:
-        memberTasks.length > 0
-          ? memberTasks[0].project_id
-          : null,
-      assigned,
-      completed: 0,
-      status: "Active"
-    };
+      rows.push({
+        id: member.id,
+        member_id: member.id,
+        name: member.name,
+        role: member.role,
+        project_title: "Unassigned",
+        project_id: null,
+        assigned: 0,
+        completed: 0,
+        status: "Active"
+      });
+
+    }
+
+    // If assignments exist → create row per project
+    else {
+
+      memberTasks.forEach(task => {
+
+        rows.push({
+          id: task.id,
+          member_id: member.id,
+          name: member.name,
+          role: member.role,
+          project_title: task.project_title,
+          project_id: task.project_id,
+          assigned: getRangeCount(task.image_range),
+          completed: 0,
+          status: "Active"
+        });
+
+      });
+
+    }
+
   });
+
+  return rows;
+
 }, [members, assignments]);
 
 
@@ -128,6 +152,7 @@ const filteredMembers = tableMembers.filter((m) => {
 
   return projectMatch && roleMatch && statusMatch;
 });
+
 const projectOptions = [
   "all",
   ...new Set(
@@ -148,44 +173,13 @@ const statuses = [ "active", "inactive"];
   const [newMember, setNewMember] = useState({
     role: '',
     name: '',
+    email: '',
     password: '',
   
   });
 
-
-// Handle edit submit
-// const handleEditSubmit = async (e) => {
-//   e.preventDefault();
-
-//   if (!selected?.member_id || !formData.name) return;
-
-//   try {
-//     await editMemberApi(selected.member_id,formData);
-
-//     // update all rows for this member
-//     // setMembers((prev) =>
-//     //   prev.map((m) =>
-//     //     m.member_id === selected.member_id
-//     //       ? { ...m, formData}
-//     //       : m
-//     //   )
-//     // );
-//     await fetchTasks();
-//     setShowEdit(false);
-//     setSelected(null);
-//     setFormData({
-//       name: "",
-//       role: "",
-//       image_range: "",
-//       edited_count: ""
-//     });
-//   } catch (err) {
-//     console.error(
-//       "Edit member failed:",
-//       err.response?.data || err
-//     );
-//   }
-// };
+ 
+ 
 // Add new member
 const addMember = async () => {
   if (!newMember.name || !newMember.password) return;
@@ -283,18 +277,20 @@ const removeMember = async () => {
     const response = await deleteMemberApi({
       member_id: selected.member_id,
       name: selected.name,
+      id:selected.id,
     });
 
     if (response.status === 200) {
       // remove from members
       setMembers(prev =>
-        prev.filter(m => m.id !== selected.member_id)
+        prev.filter(m => m.id !== selected.id)
       );
 
-      // remove assignments
-      setAssignments(prev =>
-        prev.filter(a => a.member_id !== selected.member_id)
+      // remove only the selected assignment row
+         setAssignments(prev =>
+        prev.filter(a => a.id !== selected.id)
       );
+
 
       showSuccess("Member Deleted Successfully");
       setShowDelete(false);
@@ -307,53 +303,67 @@ const removeMember = async () => {
 
 //assignTasks
 const applyAssignment = async () => {
-  const { project_id, member_id, image_range } = assign;
+  const { project_id, annotator_id, reviewer_id, image_range } = assign;
 
-  if (!project_id || !member_id || !image_range) {
-    showError("Please select project, member and range");
+  if (!project_id || !image_range || (!annotator_id && !reviewer_id)) {
+    showError("Please select project, range and at least one role");
     return;
   }
 
   try {
-    const newCount = getRangeCount(image_range);
-
-    // get latest assignments
     const latestAssignments = await fetchTasks();
 
-    // find existing assignment
-    const existing = latestAssignments.find(
-      x => x.member_id === member_id && x.project_id === project_id
-    );
+    const assignToMember = async (memberId) => {
+      const newCount = getRangeCount(image_range);
 
-    let finalRange = image_range;
-    let totalCount = newCount;
+      // find assignment for same member + same project
+      const existing = latestAssignments.find(
+        (task) =>
+          String(task.member_id) === String(memberId) &&
+          String(task.project_id) === String(project_id)
+      );
 
-    if (existing) {
-      // merge ranges
-      finalRange = mergeRanges(existing.image_range, image_range);
+      if (existing) {
+        // MERGE if same project
+        const mergedRange = mergeRanges(existing.image_range, image_range);
 
-      totalCount =
-        getRangeCount(existing.image_range) +
-        newCount;
+        await assignTaskApi({
+          project_id,
+          member_id: memberId,
+          image_range: mergedRange,
+          total_images: getRangeCount(mergedRange),
+        });
+
+      } else {
+        // CREATE NEW ROW if project is different
+        await assignTaskApi({
+          project_id,
+          member_id: memberId,
+          image_range,
+          total_images: newCount,
+        });
+      }
+    };
+
+    if (annotator_id) {
+      await assignToMember(annotator_id);
     }
 
-    await assignTaskApi({
-      project_id,
-      member_id,
-      image_range: finalRange,
-      total_images: totalCount,
-    });
+    if (reviewer_id) {
+      await assignToMember(reviewer_id);
+    }
 
-    showSuccess(existing ? "Range Updated Successfully" : "Tasks Assigned Successfully");
+    showSuccess("Tasks Assigned Successfully");
 
     await fetchTasks();
     await fetchAssignmentStats(project_id);
 
     setAssign({
       project_id: "",
-      member_id: "",
+      annotator_id: "",
+      reviewer_id: "",
       image_range: "",
-      max: 1,
+      max: null,
     });
 
   } catch (err) {
@@ -397,7 +407,8 @@ const handleEditClick = async (m) => {
   }
 
   try {
-    const assignedRes = await getAssignedRecordsByPersonApi(m.id, m.project_id);
+    const assignedRes = await getAssignedRecordsByPersonApi(  m.member_id, m.project_id);
+    console.log("fghjk",m.id);
     const assignedImages = assignedRes?.data?.images || [];
     setTasksData(assignedImages);
 
@@ -449,7 +460,7 @@ const handleApplyEditCount = async (e) => {
 
   try {
     const payload = {
-      member_id: selected.id,
+      member_id: selected.member_id,
       project_id: selected.project_id,
       name: formData.name,
       role: formData.role,
@@ -470,6 +481,8 @@ const handleApplyEditCount = async (e) => {
 return (
     <Layout
       pageTitle="Team Labelling"
+        showProjectSelector = {false}
+
     >
       <div className={styles.container}>
       <div className={styles.topRow}>
@@ -489,6 +502,17 @@ return (
                     setNewMember({ ...newMember, name: e.target.value })
                   }
                 />
+               {/* Email*/}
+                {/* <Input
+                  label="Email"
+                  name="email"
+                  placeholder="Enter Member Email"
+                  required
+                  value={newMember.email}
+                  onChange={(e) =>
+                    setNewMember({ ...newMember, email: e.target.value })
+                  }
+                /> */}
 
                 {/* PASSWORD */}
               <Input
@@ -512,6 +536,7 @@ return (
               options={[
                 { label: "Annotator", value: "Annotator" },
                 { label: "Reviewer", value: "Reviewer" },
+                { label:"Admin",value:"Admin"}
               ]}
               onChange={(value) =>
                 setNewMember({ ...newMember, role: value })
@@ -552,11 +577,30 @@ return (
               {/* ANNOTATOR */}
             <Dropdown
                 label="Annotator"
-                required
                 placeholder="Select Annotator"
-                value={String(assign.member_id || "")}
+               value={String(assign.annotator_id || "")}
                 options={members
                   .filter(m => m.role?.toLowerCase() === "annotator")
+                  .map(m => ({
+                    label: m.name,
+                    value: m.id,   // IMPORTANT: use id from API
+                  }))
+                }
+              onChange={(value) => {
+                setAssign(prev => ({
+                  ...prev,
+                  annotator_id: String(value),
+                }));
+              }}
+              />
+              
+              {/*Reviewer*/}
+               <Dropdown
+                label="Reviewer"
+                placeholder="Select Reviewer"
+               value={String(assign.reviewer_id || "")}
+                options={members
+                  .filter(m => m.role?.toLowerCase() === "reviewer")
                   .map(m => ({
                     label: m.name,
                     value: m.id,   // IMPORTANT: use id from API
@@ -565,12 +609,11 @@ return (
                 onChange={(value) => {
                   setAssign(prev => ({
                     ...prev,
-                    member_id: String(value),
+                    reviewer_id: String(value),
                   }));
                 }}
               />
-
-
+              
 
                 {/* IMAGE RANGE */}
              <div className={styles.rangeContainer}>
@@ -592,15 +635,32 @@ return (
                       }));
                     }}
                     className={styles.rangeSlider}
-                    disabled={!stats}
+                    disabled={noImagesAvailable}
                   />
 
-                  <div className={styles.rangeValue}>
-                    Selected:
-                    <b>
-                      {stats?.next_start_index ?? 1} - {assign.max ?? stats?.next_start_index ?? 1}
+              <div className={styles.rangeValue}>
+                  {!stats ? null : stats.next_start_index ? (
+                    <>
+                      <div>
+                        Selected:
+                        <b>
+                          {stats.next_start_index} - {assign.max ?? stats.next_start_index}
+                        </b>
+                      </div>
+
+                      <div>
+                        Balance:
+                        <b style={{ marginLeft: "5px" }}>
+                          {stats.total_images - stats.total_assigned}
+                        </b>
+                      </div>
+                    </>
+                  ) : (
+                    <b style={{ color: "#c92c2c" }}>
+                      No images available all are assigned
                     </b>
-                  </div>
+                  )}
+                </div>
                 </div>
 
 
@@ -610,11 +670,11 @@ return (
                 <Button
                   variant="primary"
                   icon="fi-rr-share"
-                  disabled={
-                    !assign.project_id ||
-                    !assign.member_id ||
-                    !assign.image_range
-                  }  
+                 disabled={
+                  !assign.project_id ||
+                  !assign.image_range ||
+                  (!assign.annotator_id && !assign.reviewer_id)
+                }
                   onClick={applyAssignment}
                 >
                   Assign

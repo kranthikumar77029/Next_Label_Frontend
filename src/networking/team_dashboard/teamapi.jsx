@@ -27,11 +27,12 @@ export const listTasksApi = async()=>{
 //     },
 //   });
 // };
-export const deleteMemberApi = ({ member_id, name }) => {
+export const deleteMemberApi = ({ member_id, name,id }) => {
   return teamApi.delete(endPoints.deleteMember, {
     params: {
       member_id,
       name,
+      id,
     },
   });
 };

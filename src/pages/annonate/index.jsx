@@ -2,7 +2,8 @@ import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/common/layout';
 import { Dropdown } from '@/components/ui/dropdown';
 import { useEffect, useRef, useState, useCallback,useMemo } from 'react';
-import { loadAnnotationApi, saveAnnotationApi,listAssignedImagesApi,currentImageIndexApi,listSpecifiedImagesApi,getCurrentImageIndexApi} from '@/networking/annotations/annotationsapi';
+import { loadAnnotationApi, saveAnnotationApi,listAssignedImagesApi,
+         currentImageIndexApi,listSpecifiedImageApi,getCurrentImageIndexApi,list_assigned_with_labelsApi} from '@/networking/annotations/annotationsapi';
 import { deleteImageWithLabelApi } from '@/networking/upload/uploadapi';
 import styles from './styles.module.css';
 import {
@@ -20,7 +21,8 @@ const Annotate = () => {
   const { projectId } = useParams();
   const { annotators } = useTeamMembers();
   const [selectedAnnotator, setSelectedAnnotator] = useState("");
-  const [isEdit, setIsEdit] = useState(false); //For if any edit is there automatically save triggered
+  
+  // const [isEdit, setIsEdit] = useState(false); //For if any edit is there automatically save triggered
   const [zoom, setZoom] = useState(1);
   
 
@@ -32,7 +34,6 @@ const Annotate = () => {
   const [drawMode, setDrawMode] = useState(false);
   // const [selectedClass, setSelectedClass] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
   const [showDeleteClassModal, setShowDeleteClassModal] = useState(false);
   const [boundingBoxes, setBoundingBoxes] = useState([]);
   const [selectedBoxes, setSelectedBoxes] = useState(new Set());
@@ -41,6 +42,7 @@ const Annotate = () => {
   const [dragStart, setDragStart] = useState(null);
   const [resizeHandle, setResizeHandle] = useState(null);
   const [ctrlPressed, setCtrlPressed] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("");
   const { showSuccess, showError } = useToast();
   const { selectedProject, setSelectedProject, projects } = useProjects();
   // History for undo/redo
@@ -141,8 +143,9 @@ const handleSave = async () => {
 
   const payload = {
     project_id: selectedProject.id,
-    image_id: selectedImage.id,
-    image_name: selectedImage.filename,
+    member_id: selectedAnnotator?.id || selectedAnnotator, // ← added
+    image_id: selectedImage.id || selectedImage.image_id,
+    image_name: selectedImage.filename || selectedImage.image_name,
     image_url: selectedImage.image_url,
     labels: formattedLabels
   };
@@ -155,7 +158,7 @@ const handleSave = async () => {
       setLabelPoints(formattedLabels);
       setHistory([boundingBoxes.map(b => ({ ...b }))]);
       setRedoStack([]);
-      setIsEdit(false);
+      // setIsEdit(false);
 
       return true; 
     } else {
@@ -168,9 +171,9 @@ const handleSave = async () => {
   }
 };
 
-useEffect(() => {
-  setIsEdit(false);
-}, [selectedImage]);
+// useEffect(() => {
+//   setIsEdit(false);
+// }, [selectedImage]);
  
    const handleDelete = async (img) => {
       const confirmDelete = confirm("Are you sure you want to delete this image?");
@@ -280,7 +283,7 @@ useEffect(() => {
       y: p.y / canvasHeight,
     }));
 
-
+ //get the project based on params
     useEffect(() => {
   if (!projectId || selectedProject?.id === projectId) return;
 
@@ -297,25 +300,43 @@ useEffect(() => {
   fetchAssignedImages();
 }, [selectedProject?.id, selectedAnnotator]);
 
-
-   // load images on project selection 
+//reset Annotator and Status filters whenever the Project changes, Annotator -> All, Status -> Reset
 useEffect(() => {
   if (!selectedProject?.id) return;
 
+  // reset filters
+  setSelectedAnnotator("all");
+  setSelectedStatus("");
+
   // reset viewer state
+  setImages([]);
   setSelectedImage(null);
-  setImageLoaded(false);
+  setCurrentImageIndex(0);
+  setInputIndex(0);
   setBoundingBoxes([]);
   setLabelPoints([]);
 
-  // treat empty annotator as "all"
-  if (!selectedAnnotator || selectedAnnotator === "all") {
-    fetchImagesByProject(selectedProject.id);
-  } else {
-    fetchImagesByProject(selectedProject.id, selectedAnnotator);
-  }
+}, [selectedProject?.id]);
 
-}, [selectedProject?.id, selectedAnnotator]);
+
+   // load images on project selection 
+// useEffect(() => {
+//   if (!selectedProject?.id) return;
+
+//   // reset viewer state
+//   setSelectedImage(null);
+//   setImageLoaded(false);
+//   setBoundingBoxes([]);
+//   setLabelPoints([]);
+
+//   // treat empty annotator as "all"
+//   if (!selectedAnnotator || selectedAnnotator === "all") {
+//     fetchImagesByProject(selectedProject.id);
+//   } else {
+//     fetchImagesByProject(selectedProject.id, selectedAnnotator);
+//   }
+
+// }, [selectedProject?.id, selectedAnnotator]);
 
  
 
@@ -333,13 +354,13 @@ useEffect(() => {
     setSelectedBoxes(new Set());
     setSelectedBox(null);
     fetchAnnotations(selectedImage);
-  }, [selectedImage?.filename, selectedProject?.id]);
+  }, [selectedImage?.filename ||selectedImage?.image_id, selectedProject?.id]);
 
   const fetchAnnotations = async () => {
     try {
       const res = await loadAnnotationApi(
-        selectedProject.id,
-        selectedImage.id
+        selectedProject.id ||selectedProject.project_id,
+        selectedImage.id ||selectedImage.image_id
       );
       if (res.status === 200) {
          
@@ -364,6 +385,16 @@ const fetchAssignedImages = async () => {
 
     if (res.status === 200) {
       const imgs = res.data.images || [];
+       if (imgs.length === 0) {
+        showError("No images found for the selected filter");
+        setImages([]);
+        setSelectedImage(null);
+        setCurrentImageIndex(0);
+        setInputIndex(0);
+        setBoundingBoxes([]);
+        setLabelPoints([]);
+        return;
+      }
 
       setImages(imgs);
 
@@ -392,26 +423,55 @@ const fetchAssignedImages = async () => {
   }
 };
 
-// const fetchSpecifiedImages = async () => {
-//   if (!selectedProject?.id) return;
 
-//   const memberParam = selectedAnnotator || "all";
+const fetchFilteredImages = async () => {
+  if (!selectedProject?.id || !selectedAnnotator) return;
 
-//   const res = await listSpecifiedImagesApi({
-//     member_id: memberParam,
-//     project_id: selectedProject.id,
-//     start_index: currentIndex
-//   });
+  try {
+    const res = await list_assigned_with_labelsApi(
+      selectedProject.id,
+      selectedAnnotator || "all",
+      selectedStatus || undefined
+    );
 
-//   if (res.status === 200) {
-//     setImages(res.data.images);
-//     setNextIndex(res.data.next_index);
-//   }
-// };
-// useEffect(() => {
-//   fetchSpecifiedImages();
-// }, [selectedAnnotator, selectedProject]);
+    if (res.status === 200) {
+      const imgs = res.data.images || [];
 
+       // If no images found
+      if (imgs.length === 0) {
+        showError("No images found for the selected filter");
+        setImages([]);
+        setSelectedImage(null);
+        setCurrentImageIndex(0);
+        setInputIndex(0);
+        setBoundingBoxes([]);
+        setLabelPoints([]);
+        return;
+      }
+
+      setImages(imgs);
+
+      // start from first image
+      setCurrentImageIndex(0);
+      setInputIndex(1);
+
+      const img = imgs[0];
+      setSelectedImage(img || null);
+
+      setBoundingBoxes([]);
+      setLabelPoints([]);
+    }
+  } catch (err) {
+    console.error("Failed to fetch filtered images:", err);
+    showError(err?.response?.data?.detail || "Failed to fetch images");
+  }
+};
+useEffect(() => {
+  if (!selectedProject?.id) return;
+
+  fetchFilteredImages(); // reload images with new filter
+}, [selectedProject?.id, selectedAnnotator, selectedStatus]);
+ 
 
   // -------------------------
   // Effects: redraw when boxes or mode changes
@@ -965,15 +1025,15 @@ const handleIndexChange = async () => {
   // prevent unnecessary API call
   if (newIndex === currentImageIndex) return;
 
-  if (isEdit) {
+  // if (isEdit) {
     const saved = await handleSave();
     if (!saved) return;
-  }
+  // }
 
   try {
     setImageLoaded(false);
 
-    const res = await listSpecifiedImagesApi(
+    const res = await listSpecifiedImageApi(
       selectedAnnotator || "all",
       selectedProject.id,
       newIndex +1
@@ -1014,14 +1074,14 @@ setInputIndex(newIndex + 1);
       const indicesToDelete = Array.from(selectedBoxes);
       const updatedBoxes = boundingBoxes.filter((_, i) => !indicesToDelete.includes(i));
       setBoundingBoxes(updatedBoxes);
-      setIsEdit(true);
+      // setIsEdit(true);
       setSelectedBoxes(new Set());
       setSelectedBox(null);
     } else if (selectedBox !== null) {
       // Delete single box
       const updatedBoxes = boundingBoxes.filter((_, i) => i !== selectedBox);
       setBoundingBoxes(updatedBoxes);
-      setIsEdit(true);
+      // setIsEdit(true);
       setSelectedBox(null);
     }
   }, [boundingBoxes, selectedBoxes, selectedBox]);
@@ -1056,19 +1116,19 @@ setInputIndex(newIndex + 1);
   };
 
   const handleNextClick = async () => {
-  if (isEdit) {
+  // if (isEdit) {
     const saved = await handleSave();
     if (!saved) return;
-  }
+  // }
 
   handleNextImage();
 };
 
 const handlePrevClick = async () => {
-  if (isEdit) {
+  // if (isEdit) {
     const saved = await handleSave();
     if (!saved) return;
-  }
+  // }
 
   handlePrevImage();
 };
@@ -1108,6 +1168,18 @@ const handlePrevClick = async () => {
           }}
         />
 
+        <Dropdown
+            label="Filter by Status"
+            placeholder="Select Status"
+            value={selectedStatus}
+            options={[
+              { label: "Pending", value: "pending" },
+              { label: "Rejected", value: "rejected" },
+              { label: "Approved", value: "approved" },
+              { label: "Labeled", value: "labeled" }
+            ]}
+            onChange={setSelectedStatus}
+          />
 
 
         <h3 className={styles.sidebarTitle}>Classes</h3>
@@ -1152,7 +1224,7 @@ const handlePrevClick = async () => {
             {selectedImage && (
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>Imagename:</span>
-                <span className={styles.infoValue}>{selectedImage.filename}</span>
+                <span className={styles.infoValue}>{selectedImage.filename || selectedImage.image_name}</span>
               </div>
             )}
 
@@ -1227,12 +1299,12 @@ const handlePrevClick = async () => {
           <div className={styles.canvas}>
             <div
               className={styles.canvasWrapper}
-              data-mode={drawMode ? "draw": selectedBoxes.size > 0 ? "edit": "view"}
+              // data-mode={drawMode ? "draw": selectedBoxes.size > 0 ? "edit": "view"}
 
             >
               <img
                 ref={imageRef}
-                src={selectedImage?.url}
+                src={selectedImage?.url || selectedImage?.image_url}
                 // crossOrigin="anonymous"
                 onLoad={()=>setImageLoaded(true)}
                 style={{ display: 'none' }}

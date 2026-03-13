@@ -191,35 +191,32 @@ const Form = ({
         onChange={(value) => handleChange("role", value)}
       />
       )}
-      {/* ---------------- ASSIGNED ---------------- */}
-      {mode === "member" && (
+   {/* ---------- ASSIGNED + UNASSIGNED ROW ---------- */}
+{mode === "member" && (
+  <div style={{ display: "flex", gap: "12px" }}>
+    
+    <div style={{ flex: 1 }}>
       <Input
         label="Assigned"
-        required
         name="image_range"
         type="number"
-        placeholder="50"
         value={formData.image_range}
-        onChange={(e) =>
-          handleChange("image_range", e.target.value)
-        }
-        error={errors.image_range}
+        disabled
       />
-    )}
- {/* ---------------- UNASSIGNED ---------------- */}
-      {mode === "member" && (
+    </div>
+
+    <div style={{ flex: 1 }}>
       <Input
-        label="UnAssigned"
-        name="Unassigned"
+        label="Unassigned"
+        name="unassigned"
         type="number"
-        placeholder="Unassigned images Data"
         value={formData.unassigned_count}
-        onChange={(e) =>
-          handleChange("Unassigned", e.target.value)
-        }
-        error={errors.image_range}
+        disabled
       />
-    )}
+    </div>
+
+  </div>
+)}
 
       {/*----------------Edited Count---------*/}
       {mode === "member" && (
