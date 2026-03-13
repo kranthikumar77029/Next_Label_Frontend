@@ -1,0 +1,17 @@
+.chartWrapper {
+  width: 100%;
+  height: 300px;
+}
+
+.chartWrapper :global(.recharts-cartesian-axis-tick-value) {
+  font-size: 11px;
+  fill: #64748b;
+}
+
+.chartWrapper :global(.recharts-tooltip-wrapper) {
+  font-size: 12px;
+}
+
+.chartWrapper :global(.recharts-cartesian-grid line) {
+  stroke: #e5e7eb;
+}

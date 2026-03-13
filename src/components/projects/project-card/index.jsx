@@ -60,14 +60,14 @@ const isLoadingImages = loadingByProject?.[project.id];
             </div>
           </div>
 
-        <button
+        {/* <button
           className={`${styles.statusToggle} ${
             isActive ? styles.active : styles.inactive
           }`}
           onClick={() => setIsActive(prev => !prev)}
         >
           {isActive ? "Active" : "Inactive"}
-        </button>
+        </button> */}
 
 
         </div>
@@ -93,7 +93,7 @@ const isLoadingImages = loadingByProject?.[project.id];
           items={[
             {
               icon: "fi-rr-picture",
-                value: isLoadingImages ? "—" : imageCount,
+              value: isLoadingImages ? "—" : imageCount,
               label: "Images",
             },
             {

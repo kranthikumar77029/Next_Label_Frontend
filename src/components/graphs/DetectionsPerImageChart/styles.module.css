@@ -1,0 +1,41 @@
+.chartWrapper {
+  width: 100%;
+  height: 300px;
+  position: relative;
+}
+
+/* axis tick text */
+.chartWrapper :global(.recharts-cartesian-axis-tick-value) {
+  font-size: 11px;
+  fill: #64748b;
+}
+
+/* axis labels */
+.chartWrapper :global(.recharts-label) {
+  font-size: 12px;
+  fill: #475569;
+}
+
+/* grid lines */
+.chartWrapper :global(.recharts-cartesian-grid line) {
+  stroke: #e5e7eb;
+  stroke-dasharray: 2 4;
+}
+
+/* tooltip box */
+.chartWrapper :global(.recharts-tooltip-wrapper) {
+  font-size: 12px;
+}
+
+/* tooltip container */
+.chartWrapper :global(.recharts-default-tooltip) {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 6px !important;
+  padding: 8px 10px !important;
+}
+
+/* bar hover */
+.chartWrapper :global(.recharts-bar-rectangle:hover) {
+  opacity: 0.85;
+}
