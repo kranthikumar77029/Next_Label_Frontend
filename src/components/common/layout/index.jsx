@@ -15,7 +15,7 @@ const Layout = ({
   const { projects, selectedProject, setSelectedProject } = useProjects();
   const [collapsed, setCollapsed] = useState(false);
 
-  const selectedValue = selectedProject?.id || "";
+  // const selectedValue = selectedProject?.id || "";
 ;
   return (
     <div className={styles.layout}>

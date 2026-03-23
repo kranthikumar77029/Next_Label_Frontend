@@ -2,6 +2,7 @@ import { useState } from "react";
 import styles from "./styles.module.css";
 
 function HeatmapChart({ graphData }) {
+    const [tooltip, setTooltip] = useState(null);
 
   if (!graphData?.spatial_heatmap) return null;
 
@@ -9,7 +10,7 @@ function HeatmapChart({ graphData }) {
 
   const maxVal = Math.max(...matrix.flat());
 
-  const [tooltip, setTooltip] = useState(null);
+
 
   const getColor = (val) => {
     if (val === 0) return "#F9FAFB";

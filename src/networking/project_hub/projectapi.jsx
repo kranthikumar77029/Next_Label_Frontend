@@ -4,11 +4,10 @@ import { projectsApi } from '@/services/axios';
 export const createProjectApi=async(data)=>
     Promise.resolve(projectsApi.post(endPoints.createProject, data));
 
-export const deleteProjectApi = async ({ project_title, project_id }) => {
+export const deleteProjectApi = async ({  project_id }) => {
   return projectsApi.delete(endPoints.deleteProject, {
     params: {
-    
-      project_id,
+     project_id,
     },
   })
 };

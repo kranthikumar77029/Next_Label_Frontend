@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { TextArea } from "@/components/ui/text-area";
 import { Dropdown } from "@/components/ui/dropdown";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import styles from "./styles.module.css";
 
 const ConfigForm = ({ formData,setFormData }) => {
-  const { projects, selectedProject, setSelectedProject } = useProjects();
+  const {  selectedProject } = useProjects();
 //   const [formData, setFormData] = useState({
 //   modelType: "YOLOv8",
 //   project_id: null,        
@@ -69,14 +69,14 @@ const MODEL_SIZE_OPTIONS = [
   { value: "s", label: "Small (s)" },
   { value: "m", label: "Medium (m)" },
   { value: "l", label: "Large (l)" },
-  { value: "x", label: "XL (x)" }
+  
 ];
 
 
 useEffect(() => {
 
   if (formData.model === "yolo") {
-    const modelName = `yolo${formData.version || "v8"}${formData.size || "n"}.pt`;
+    const modelName = `yolo${formData.version }${formData.size }.pt`;
 
     setFormData(prev => ({
       ...prev,
@@ -101,6 +101,7 @@ useEffect(() => {
   <div className={styles.formGroup}>
     <Dropdown
       label="Model"
+      required
       value={formData.model}
       options={MODEL_OPTIONS}
       onChange={(value) =>
@@ -116,6 +117,7 @@ useEffect(() => {
     <div className={styles.formGroup}>
       <Dropdown
         label="Version"
+        required
         value={formData.version }
         options={VERSION_OPTIONS}
         onChange={(value) =>
@@ -132,6 +134,7 @@ useEffect(() => {
     <div className={styles.formGroup}>
       <Dropdown
         label="Model Size"
+        required
         value={formData.size}
         options={MODEL_SIZE_OPTIONS}
         onChange={(value) =>

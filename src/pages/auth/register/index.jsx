@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+// import { useNavigate } from "react-router-dom";
 import { AuthLayout } from "@/components/authentication";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
+// import { useAuth } from "@/context/AuthContext";
 import { ROUTES } from "@/routes/constants";
 import { Dropdown } from "@/components/ui/dropdown";
 import { Link } from "react-router-dom";
@@ -55,7 +55,7 @@ const Register = () => {
   setIsLoading(true);
   setTimeout(() => {
     setIsLoading(false);
-    login();
+    // login();
     // navigate(ROUTES.HOME, { replace: true });
   }, 1000);
 };

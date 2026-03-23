@@ -1,15 +1,15 @@
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import { Layout } from '../../components/common/layout';
-import { ROUTES } from '../../routes/constants';
+// import { ROUTES } from '../../routes/constants';
 import { uploadImagesApi } from '@/networking/upload/uploadapi';
 import { useToast } from "@/hooks/use-toast";
 import styles from './styles.module.css';
 import { useProjects } from '@/context/ProjectContext';
 import { useProjectImages } from '@/context/ProjectImagesContext';
 const Upload = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { projects, selectedProject, setSelectedProject } = useProjects();
   const { showSuccess, showError,showInfo} = useToast();
  const { uploadedImages: images, setUploadedImages: setImages } = useProjectImages();

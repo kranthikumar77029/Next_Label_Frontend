@@ -27,7 +27,7 @@ const Classes = () => {
   });
 
   
-const handleSubmit = async (e) => {
+const handleSubmit = async ( ) => {
   // e.preventDefault();
 
   const payload = {

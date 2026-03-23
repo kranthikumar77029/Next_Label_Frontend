@@ -4,20 +4,18 @@ import {
   useEffect,
   useRef,
   useState,
-  useMemo
+  useCallback
 } from "react";
 
 import {
   loadAnnotationApi,
-  listAssignedImagesApi,
   getCurrentImageIndexApi,
   currentImageIndexApi
 } from "@/networking/annotations/annotationsapi";
 import { listReviewerTasksApi } from "@/networking/review/reviewapi";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@/hooks/use-toast";
 import { useProjectImages } from "@/context/ProjectImagesContext";
 import { useProjects } from "@/context/ProjectContext";
-import { useTeamMembers } from "@/context/TeamMembers";
 import { useParams } from "react-router-dom";
 
 const AnnotationImagesContext = createContext();
@@ -25,11 +23,10 @@ const AnnotationImagesContext = createContext();
 export const AnnotationImagesProvider = ({ children }) => {
   const [status, setStatus] = useState("");
   const { projectId } = useParams();
-  const { annotators } = useTeamMembers();
+
   const { selectedProject, setSelectedProject, projects } = useProjects();
-  const { images = [], setImages = () => {} } = useProjectImages;
-  // const { images,setImages } = useProjectImages() 
-  const { showSuccess, showError } = useToast();
+  const { images = [], setImages = () => {} } = useProjectImages();
+  const { showError } = useToast();
 
   /* ---------------- refs ---------------- */
   const canvasRef = useRef(null);
@@ -37,9 +34,9 @@ export const AnnotationImagesProvider = ({ children }) => {
 
   /* ---------------- state ---------------- */
   const [selectedAnnotator, setSelectedAnnotator] = useState("");
-  const [annotatorName, setAnnotatorName] = useState("");
-  const [selectedReviewer,setSelectedReviewer]=useState("");
+  const [selectedReviewer, setSelectedReviewer] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [inputIndex, setInputIndex] = useState(1);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -47,150 +44,101 @@ export const AnnotationImagesProvider = ({ children }) => {
   const [boundingBoxes, setBoundingBoxes] = useState([]);
   const [labelPoints, setLabelPoints] = useState([]);
 
-  const [selectedClassId, setSelectedClassId] = useState(null);
-  const [selectedBoxes, setSelectedBoxes] = useState(new Set());
-  const [selectedBox, setSelectedBox] = useState(null);
-
-
+  /* ---------------- helpers ---------------- */
   const clearCanvasState = () => {
-  setImages([]);
-  setSelectedImage(null);
-  setBoundingBoxes([]);
-  setLabelPoints([]);
-  setCurrentImageIndex(0);
-};
+    setImages([]);
+    setSelectedImage(null);
+    setBoundingBoxes([]);
+    setLabelPoints([]);
+    setCurrentImageIndex(0);
+  };
 
-  /* ---------------- classes ---------------- */
-  const classes = useMemo(() => {
-    return (
-      selectedProject?.classes?.map(cls => ({
-        id: cls.id,
-        name: cls.class_name,
-        color: cls.color
-      })) || []
-    );
-  }, [selectedProject]);
-
-  /* ---------------- project from URL ---------------- */
+  /* ---------------- project sync ---------------- */
   useEffect(() => {
     if (!projectId || selectedProject?.id === projectId) return;
 
     const found = projects?.find(p => String(p.id) === String(projectId));
     if (found) setSelectedProject(found);
-  }, [projectId, projects]);
+  }, [projectId, projects, selectedProject?.id]);
 
-  /* ---------------- load images ---------------- */
-  // useEffect(() => {
-  //   if (!selectedProject?.id) return;
+  /* ---------------- fetch reviewer tasks ---------------- */
+  const fetchReviewerTasks = useCallback(async () => {
+    if (!selectedProject?.id || !selectedReviewer) return;
 
-  //   setSelectedImage(null);
-  //   setBoundingBoxes([]);
-  //   setLabelPoints([]);
-  //   setImageLoaded(false);
+    try {
+      const memberId = selectedReviewer || selectedAnnotator;
 
-  //   fetchImagesByProject(
-  //     selectedProject.id,
-  //     selectedAnnotator || undefined
-  //   );
-  // }, [selectedProject?.id, selectedAnnotator]);
+      const res = await listReviewerTasksApi(
+        selectedReviewer,
+        selectedProject.id,
+        status || "all",
+        selectedAnnotator
+      );
 
-  /* ---------------- assigned images ---------------- */
-const fetchAssignedImages = async () => {
-  if (!selectedProject?.id) return;
+      const imgs = res?.data?.images || [];
 
-  try {
-    // determine active member (reviewer first for review screen)
-    const memberId = selectedReviewer || selectedAnnotator || "all";
-
-    const res = await listReviewerTasksApi(
-      memberId,
-      selectedProject.id,
-      status || "all"
-    );
-
-    const imgs = res?.data?.images || [];
-
-    // No images case
       if (imgs.length === 0) {
-      showError("No images available");
-
-      setImages([]);
-      setSelectedImage(null);
-      setCurrentImageIndex(0);
-      setInputIndex(0);
-      setBoundingBoxes([]);
-      setLabelPoints([]);
-      setAnnotatorName("");
-
-      // clear canvas
-      const canvas = canvasRef?.current;
-      if (canvas) {
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        showError("No images available");
+        clearCanvasState();
+        return;
       }
 
-      return;
+      setImages(imgs);
+
+      const idxRes = await getCurrentImageIndexApi(
+        selectedProject.id,
+        memberId
+      );
+
+      const backendIndex = idxRes?.data?.current_index || 1;
+      const zeroIndex = Math.min(imgs.length - 1, backendIndex - 1);
+
+      setCurrentImageIndex(zeroIndex);
+      setInputIndex(zeroIndex + 1);
+      setSelectedImage(imgs[zeroIndex]);
+
+    } catch (err) {
+      console.error("Assigned image fetch error", err);
+      clearCanvasState();
     }
+  }, [
+    selectedProject?.id,
+    selectedReviewer,
+    selectedAnnotator,
+    status
+  ]);
 
-    setImages(imgs);
-
-    // fetch saved index
-    const idxRes = await getCurrentImageIndexApi(
-      selectedProject.id,
-      memberId
-    );
-
-    const backendIndex = idxRes?.data?.current_index || 1;
-
-    // prevent index overflow
-    const zeroIndex = Math.min(imgs.length - 1, backendIndex - 1);
-
-    setCurrentImageIndex(zeroIndex);
-    setInputIndex(zeroIndex + 1);
-    setSelectedImage(imgs[zeroIndex]);
-
-    setAnnotatorName(imgs[zeroIndex]?.annotator_name || "");
-
-  } catch (err) {
-    console.error("Assigned image fetch error", err);
-    clearCanvasState();
-  }
-};
-
- useEffect(() => {
-  fetchAssignedImages();
-}, [selectedProject?.id, selectedAnnotator, selectedReviewer, status]);
+  useEffect(() => {
+    fetchReviewerTasks();
+  }, [fetchReviewerTasks]);
 
   /* ---------------- fetch annotations ---------------- */
-const fetchAnnotations = async image => {
-  if (!selectedProject?.id || !image) return;
+  const fetchAnnotations = useCallback(async (image) => {
+    if (!selectedProject?.id || !image) return;
 
-  try {
-    const res = await loadAnnotationApi(selectedProject.id, image.id);
+    try {
+      const res = await loadAnnotationApi(selectedProject.id, image.id);
+      const data = res.data || {};
 
-    const data = res.data || {};
+      setLabelPoints(data.labels || []);
 
-    setLabelPoints(data.labels || []);
+      setSelectedImage(prev => ({
+        ...prev,
+        status: data.status ?? null,
+        rejection_comment: data.rejection_comment ?? ""
+      }));
 
-    //  update image meta safely
-    setSelectedImage(prev => ({
-      ...prev,
-      status: data.status ?? null,
-      rejection_comment: data.rejection_comment ?? ""
-    }));
-
-  } catch (err) {
-    console.error("Annotation load failed", err);
-  }
-};
-  useEffect(() => {
-    if (selectedImage) {
-      setBoundingBoxes([]);
-      setSelectedBoxes(new Set());
-      setSelectedBox(null);
-      fetchAnnotations(selectedImage);
+    } catch (err) {
+      console.error("Annotation load failed", err);
     }
-  }, [selectedImage?.id, selectedProject?.id]);
+  }, [selectedProject?.id]);
+
+  useEffect(() => {
+    if (!selectedImage) return;
+
+    setBoundingBoxes([]);
+    fetchAnnotations(selectedImage);
+  }, [selectedImage?.id, fetchAnnotations]);
 
   /* ---------------- label → box ---------------- */
   const labelToBox = (label, imgWidth, imgHeight) => {
@@ -233,10 +181,10 @@ const fetchAnnotations = async image => {
       setSelectedImage(images[0]);
       setCurrentImageIndex(0);
     }
-  }, [images]);
+  }, [images, selectedImage]);
 
   /* ---------------- navigation ---------------- */
-  const goToIndex = async index => {
+  const goToIndex = async (index) => {
     if (!images.length) return;
 
     const newIndex = Math.max(0, Math.min(images.length - 1, index));
@@ -247,7 +195,7 @@ const fetchAnnotations = async image => {
 
     try {
       await currentImageIndexApi({
-        member_id: selectedAnnotator,
+        member_id: selectedReviewer || selectedAnnotator,
         project_id: selectedProject?.id,
         current_index: newIndex + 1
       });
@@ -277,9 +225,11 @@ const fetchAnnotations = async image => {
     imageLoaded,
     boundingBoxes,
     labelPoints,
+
     selectedAnnotator,
     selectedReviewer,
     status,
+
     setStatus,
     setSelectedAnnotator,
     setSelectedReviewer,
@@ -302,4 +252,5 @@ const fetchAnnotations = async image => {
   );
 };
 
-export const useAnnotationImages = () => useContext(AnnotationImagesContext);
+export const useAnnotationImages = () =>
+  useContext(AnnotationImagesContext);

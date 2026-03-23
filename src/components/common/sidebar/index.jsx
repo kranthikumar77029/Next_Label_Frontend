@@ -34,12 +34,17 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       icon: 'fi-rr-picture',
       label: 'Annotation Viewer',
     },
- {
-  path: ROUTES.ANALYTICS,
-  icon: "fi-rr-stats",
-  label: "Analytics"
-},
-    
+    {
+      path: ROUTES.ANALYTICS,
+      icon: "fi-rr-stats",
+      label: "Analytics"
+    },
+    // {
+    //   path: ROUTES.COMPAREMODELS,
+    //   icon: "fi-rr-chart-tree",
+    //   label: "Compare Models"
+    // },
+        
      {
       path: ROUTES.REVIEW,
       icon: 'fi-rr-briefcase',

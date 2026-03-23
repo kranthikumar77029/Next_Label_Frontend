@@ -10,7 +10,7 @@ import styles from './styles.module.css';
 
 const ManualLabel = () => {
  const [search, setSearch] = useState('');
- const [page, setPage] = useState(1);
+ const [_page, setPage] = useState(1);
   const navigate = useNavigate();
   const {projects} = useProjects();
 
@@ -19,11 +19,11 @@ const ManualLabel = () => {
     return matchesSearch;
   });
 
-  const handleOpenProject = (project) => {
-    navigate(
-      `${ROUTES.ANNOTATE}?projectId=${project.id}&batchId=batch-1&total=${project.images}&done=${project.done}`
-    );
-  };
+  // const handleOpenProject = (project) => {
+  //   navigate(
+  //     `${ROUTES.ANNOTATE}?projectId=${project.id}&batchId=batch-1&total=${project.images}&done=${project.done}`
+  //   );
+  // };
 
   return (
     <Layout

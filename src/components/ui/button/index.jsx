@@ -7,7 +7,6 @@ const Button = ({
   size = "medium",
   icon,
   className = "",
-  fullWidth=false,
   ...props
 }) => {
   const sizeClass =

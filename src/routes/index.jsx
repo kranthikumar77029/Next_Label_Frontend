@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { Navigate } from 'react-router-dom';
+// import { Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/protected-route.jsx';
 import { SuspenseWrapper } from './components.jsx';
 import { ROUTES } from './constants.js';
@@ -23,6 +23,7 @@ const ForgotPassword = lazy(()=>import('../pages/auth/forgot/index.jsx'))
 const Register = lazy(()=>import('../pages/auth/register/index.jsx'))
 const ProjectImages = lazy(()=>import("@/pages/project-images"))
 const Analytics=lazy(()=>import("@/pages/analytics/index.jsx"))
+// const CompareModels=lazy(()=>import("@/pages/comparemodels/index.jsx"))
 
 export const routes = [
    {
@@ -132,6 +133,17 @@ export const routes = [
     ),
     
   },
+  //  {
+  //   path: ROUTES.COMPAREMODELS,
+  //   element: (
+   
+  //       <SuspenseWrapper>
+  //         <CompareModels />
+  //       </SuspenseWrapper>
+      
+  //   ),
+    
+  // },
   {
     path: ROUTES.TEAM_DASHBOARD,
     element: (

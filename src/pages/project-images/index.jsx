@@ -60,7 +60,7 @@ const ProjectImages = () => {
     }
   };
 
-  const handleDeleteAll = async (img) => {
+  const handleDeleteAll = async () => {
     const confirmDelete = confirm("Are you sure you want to delete All images?");
     if (!confirmDelete) return;
 

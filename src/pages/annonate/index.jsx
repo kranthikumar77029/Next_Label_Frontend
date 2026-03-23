@@ -2,8 +2,8 @@ import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/common/layout';
 import { Dropdown } from '@/components/ui/dropdown';
 import { useEffect, useRef, useState, useCallback,useMemo } from 'react';
-import { loadAnnotationApi, saveAnnotationApi,listAssignedImagesApi,
-         currentImageIndexApi,listSpecifiedImageApi,getCurrentImageIndexApi,list_assigned_with_labelsApi} from '@/networking/annotations/annotationsapi';
+import { loadAnnotationApi, saveAnnotationApi,
+         currentImageIndexApi,listSpecifiedImageApi,list_assigned_with_labelsApi} from '@/networking/annotations/annotationsapi';
 import { deleteImageWithLabelApi } from '@/networking/upload/uploadapi';
 import styles from './styles.module.css';
 import {
@@ -20,6 +20,7 @@ const Annotate = () => {
   // const [searchParams] = useSearchParams();
   const { projectId } = useParams();
   const { annotators } = useTeamMembers();
+  const [selectedClass, setSelectedClass] = useState(null);
   const [selectedAnnotator, setSelectedAnnotator] = useState("");
   
   // const [isEdit, setIsEdit] = useState(false); //For if any edit is there automatically save triggered
@@ -46,14 +47,14 @@ const Annotate = () => {
   const { showSuccess, showError } = useToast();
   const { selectedProject, setSelectedProject, projects } = useProjects();
   // History for undo/redo
-  const [history, setHistory] = useState([]); // array of boundingBoxes snapshots
-  const [redoStack, setRedoStack] = useState([]);
+  const [_history, setHistory] = useState([]);
+const [_redoStack, setRedoStack] = useState([]);
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
   const deleteButtonRef = useRef(null); // { index, x, y, size } or null
   const [imageLoaded, setImageLoaded] = useState(false);
-  const { images, setImages,fetchImagesByProject } = useProjectImages();
-  const storageKey = `imageIndex_${selectedProject?.id || "default"}`;
+  const { images, setImages } = useProjectImages();
+  // const storageKey = `imageIndex_${selectedProject?.id || "default"}`;
  
 // const [currentImageIndex, setCurrentImageIndex] = useState(() => {
 //   const saved = localStorage.getItem(storageKey);
@@ -96,10 +97,7 @@ useEffect(() => {
 //   }
 // }, [currentImageIndex, storageKey, selectedProject?.id]);
 
-
-  // Sample image - using a placeholder that will work
-  const sampleImageUrl =
-    'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80';
+ 
 
  const classes = useMemo(() => {
   return selectedProject?.classes.map(cls => ({
@@ -162,7 +160,7 @@ const handleSave = async () => {
 
       return true; 
     } else {
-     showError(error.detail);
+     
       return false;
     }
   } catch (err) {
@@ -175,7 +173,7 @@ const handleSave = async () => {
 //   setIsEdit(false);
 // }, [selectedImage]);
  
-   const handleDelete = async (img) => {
+   const handleDelete = async () => {
       const confirmDelete = confirm("Are you sure you want to delete this image?");
       if (!confirmDelete) return;
   
@@ -242,31 +240,43 @@ const handleSave = async () => {
     setRedoStack([]);
   }, [boundingBoxes]);
 
-  const undo = useCallback(() => {
-    setHistory((h) => {
-      if (h.length === 0) return h;
-      const previous = h[h.length - 1];
-      setRedoStack((r) => [boundingBoxes.map((b) => ({ ...b })), ...r]);
-      setBoundingBoxes(previous.map((b) => ({ ...b })));
-      // clear selection after undo
-      setSelectedBoxes(new Set());
-      setSelectedBox(null);
-      return h.slice(0, -1);
-    });
-  }, [boundingBoxes]);
+const undo = useCallback(() => {
+  setHistory((h) => {
+    if (h.length === 0) return h;
 
-  const redo = useCallback(() => {
-    setRedoStack((r) => {
-      if (r.length === 0) return r;
-      const next = r[0];
-      setHistory((h) => [...h, boundingBoxes.map((b) => ({ ...b }))]);
-      setBoundingBoxes(next.map((b) => ({ ...b })));
-      // clear selection after redo
-      setSelectedBoxes(new Set());
-      setSelectedBox(null);
-      return r.slice(1);
-    });
-  }, [boundingBoxes]);
+    const previous = h[h.length - 1];
+
+    setRedoStack((r) => [
+      boundingBoxes.map((b) => ({ ...b })),
+      ...r,
+    ]);
+
+    setBoundingBoxes(previous.map((b) => ({ ...b })));
+    setSelectedBoxes(new Set());
+    setSelectedBox(null);
+
+    return h.slice(0, -1);
+  });
+}, [boundingBoxes, setRedoStack, setBoundingBoxes]);
+
+ const redo = useCallback(() => {
+  setRedoStack((r) => {
+    if (r.length === 0) return r;
+
+    const next = r[0];
+
+    setHistory((h) => [
+      ...h,
+      boundingBoxes.map((b) => ({ ...b })),
+    ]);
+
+    setBoundingBoxes(next.map((b) => ({ ...b })));
+    setSelectedBoxes(new Set());
+    setSelectedBox(null);
+
+    return r.slice(1);
+  });
+}, [boundingBoxes, setHistory, setBoundingBoxes]);
 
   const boxToPoints = (box) => {
     return [
@@ -293,13 +303,7 @@ const handleSave = async () => {
     setSelectedProject(found);
   }
 }, [projectId, projects]);
- //For assigned images using project_id and annotator_id   
-useEffect(() => {
-  if (!selectedProject?.id || !selectedAnnotator) return;
-
-  fetchAssignedImages();
-}, [selectedProject?.id, selectedAnnotator]);
-
+ 
 //reset Annotator and Status filters whenever the Project changes, Annotator -> All, Status -> Reset
 useEffect(() => {
   if (!selectedProject?.id) return;
@@ -373,55 +377,7 @@ useEffect(() => {
        showError(err?.response?.data?.detail || "Failed to load Annotations");
     }
   };
-  //fetcth assigned Images
-const fetchAssignedImages = async () => {
-  if (!selectedProject?.id || !selectedAnnotator) return;
-
-  try {
-    const res = await listAssignedImagesApi(
-      selectedProject.id,
-      selectedAnnotator
-    );
-
-    if (res.status === 200) {
-      const imgs = res.data.images || [];
-       if (imgs.length === 0) {
-        showError("No images found for the selected filter");
-        setImages([]);
-        setSelectedImage(null);
-        setCurrentImageIndex(0);
-        setInputIndex(0);
-        setBoundingBoxes([]);
-        setLabelPoints([]);
-        return;
-      }
-
-      setImages(imgs);
-
-      // get backend index
-      const idxRes = await getCurrentImageIndexApi(
-        selectedProject.id,
-        selectedAnnotator
-      );
-
-      const backendIndex = idxRes.data?.current_index || 1;
-
-      // convert to 0-based
-      const zeroIndex = backendIndex - 1;
-
-      setCurrentImageIndex(zeroIndex);
-      setInputIndex(backendIndex);
-
-      // set selected image
-      setSelectedImage(imgs[zeroIndex] || imgs[0] || null);
-
-      setBoundingBoxes([]);
-      setLabelPoints([]);
-    }
-  } catch (err) {
-      showError(err?.response?.data?.detail || "Failed to Fetch Images");
-  }
-};
+ 
 
 
 const fetchFilteredImages = async () => {
@@ -580,7 +536,7 @@ useEffect(() => {
   const handleKeyDown = (e) => {
     if (e.key === "Shift" && !e.repeat) {
       setDrawMode(prev => !prev); // 🔥 toggle
-      setEditMode(false);
+      // setEditMode(false);
     }
   };
 
@@ -591,7 +547,7 @@ useEffect(() => {
   };
 }, []);
 
- const labelToBox = (label, imgWidth, imgHeight, classes) => {
+ const labelToBox = (label, imgWidth, imgHeight) => {
   const coords = label.coordinates; //use coordinates directly
 
   const xs = [];
@@ -607,9 +563,9 @@ useEffect(() => {
   const xMax = Math.max(...xs);
   const yMax = Math.max(...ys);
 
-  const cls =
-    classes.find(c => c.id === label.id || c.name === label.name) ||
-    classes[0];
+  // const cls =
+  //   classes.find(c => c.id === label.id || c.name === label.name) ||
+  //   classes[0];
 
   return {
     x: xMin,
@@ -931,7 +887,7 @@ const handleMouseMove = (e) => {
       const updated = [...boundingBoxes];
       updated[selectedIndex] = newBox;
       setBoundingBoxes(updated);
-      setIsEdit(true);
+      // setIsEdit(true);
     }
     return;
   }
@@ -968,7 +924,7 @@ const handleMouseMove = (e) => {
     });
 
     setBoundingBoxes(updated);
-    setIsEdit(true);
+    // setIsEdit(true);
   }
 };
 
@@ -998,7 +954,7 @@ const handleMouseMove = (e) => {
       };
 
       setBoundingBoxes(prev => [...prev, newBox]);
-      setIsEdit(true)
+      // setIsEdit(true)
     }
 
     // allow continuous drawing with CTRL

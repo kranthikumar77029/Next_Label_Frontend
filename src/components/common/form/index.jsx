@@ -13,6 +13,20 @@ import styles from "./styles.module.css";
 //     description: "",
 //     tags: "",
 //   });
+
+const modelOptions=[
+  { value:"yolov8n.pt",  label: "yolov8n"},
+  { value:"yolov8s.pt",  label:"yolov8s"},
+  { value:"yolov8m.pt",  label:"yolov8m"},
+  { value:"yolov8l.pt",  label:"yolov8l"},
+  { value:"yolov8x.pt",  label:"yolov8x"},
+  { value:"yolo11n.pt",  label:"yolov11n"},
+  { value:"yolo11s.pt",  label:"yolov11s"},
+  { value:"yolo11m.pt",  label:"yolov11m"},
+  { value:"yolo11l.pt",  label:"yolov11l"},
+  { value:"yolo11x.pt",  label:"yolov11x"},
+  
+]
 const Form = ({ 
   formData, 
   setFormData, 
@@ -23,9 +37,14 @@ const Form = ({
 }) => {
 
   const [errors, setErrors] = useState({});
+  
   const { projects } = useProjects();
-  const [selectedProject, setSelectedProject] = useState("");
-
+  // const [selectedProject, setSelectedProject] = useState("");
+  const projectOptions =
+  projects?.map((proj) => ({
+    label: proj.project_title,
+    value: proj.id,
+  })) || [];
 
   const validateForm = () => {
     let newErrors = {};
@@ -141,7 +160,7 @@ const Form = ({
 
 
       {/* ---------------- DESCRIPTION ---------------- */}
-      {mode !== "member" && (
+    {(mode === "project" || mode === "class") && (
         <TextArea
           label="Description"
           required
@@ -233,7 +252,105 @@ const Form = ({
         }
       />
     )}
-     {/* ---------------- ACTIONS ---------------- */}
+
+  {mode === "compare" && (
+  <>
+    <div className={styles.compareContainer}>
+    <Dropdown
+      label="Select Project"
+      placeholder="Choose project"
+      options={projectOptions}
+      value={formData.project_id || ""}
+      onChange={(value) => {
+        const selectedProj = projects.find((p) => p.id === value);
+
+        setFormData((prev) => ({
+          ...prev,
+          project_id: value,
+          project_title: selectedProj?.project_title || "",
+        }));
+      }}
+    />
+    </div>
+    <div className={styles.compareRow}>
+      
+      {/* Model A */}
+      <div className={styles.modelColumn}>
+        <Dropdown
+          label="Model A"
+          placeholder="Select first model"
+          options={[...modelOptions, { value: "custom", label: "Custom" }]}
+          value={formData.modelA || ""}
+          onChange={(value) => handleChange("modelA", value)}
+        />
+
+        {formData.modelA === "custom" && (
+          <input
+            type="text"
+            placeholder="Enter custom model"
+            value={formData.customModelA || ""}
+            onChange={(e) => handleChange("customModelA", e.target.value)}
+            className={styles.customInput}
+          />
+        )}
+      </div>
+
+      {/* Model B */}
+      <div className={styles.modelColumn}>
+        <Dropdown
+          label="Model B"
+          placeholder="Select second model"
+          options={[...modelOptions, { value: "custom", label: "Custom" }]}
+          value={formData.modelB || ""}
+          onChange={(value) => handleChange("modelB", value)}
+        />
+
+        {formData.modelB === "custom" && (
+          <input
+            type="text"
+            placeholder="Enter custom model"
+            value={formData.customModelB || ""}
+            onChange={(e) => handleChange("customModelB", e.target.value)}
+            className={styles.customInput}
+          />
+        )}
+      </div>
+
+    </div>
+      <div className={styles.formGroup}>
+          <label className={styles.label}>Confidence Threshold</label>
+          <div className={styles.sliderWrapper}>
+            <Input
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={formData.confidence}
+              onChange={(e) =>
+                setFormData(prev => ({
+                  ...prev,
+                  confidence: Number(e.target.value),
+                }))
+              }
+              className={styles.slider}
+            />
+            <span className={styles.sliderValue}>{formData.confidence}</span>
+          </div>
+        </div>
+        <Input
+          label="Max Images"
+          type="number"
+          value={formData.max_images}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              max_images: Number(e.target.value)
+            }))
+          }
+        />
+    </>
+  )}
+          {/* ---------------- ACTIONS ---------------- */}
       <div className={styles.modalActions}>
         <Button variant="secondary" type="button" onClick={onCancel}>
           Cancel

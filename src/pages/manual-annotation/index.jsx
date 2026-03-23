@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/common/layout';
 import { Dropdown } from '@/components/ui/dropdown';
 import { useEffect, useRef, useState, useCallback,useMemo } from 'react';
-import { loadAnnotationApi, saveAnnotationApi,listAssignedImagesApi,
+import {  saveAnnotationApi,listAssignedImagesApi,
          currentImageIndexApi,listSpecifiedImageApi,getCurrentImageIndexApi,list_assigned_with_labelsApi} from '@/networking/annotations/annotationsapi';
 import { deleteImageWithLabelApi } from '@/networking/upload/uploadapi';
 import styles from './styles.module.css';
@@ -21,7 +21,7 @@ const ManualAnnotate = () => {
   const { projectId } = useParams();
   const { annotators } = useTeamMembers();
   const [selectedAnnotator, setSelectedAnnotator] = useState("");
-  
+  const [selectedClass, setSelectedClass] = useState(null);
   const [isEdit, setIsEdit] = useState(false); //For if any edit is there automatically save triggered
   const [zoom, setZoom] = useState(1);
   
@@ -46,15 +46,15 @@ const ManualAnnotate = () => {
   const { showSuccess, showError } = useToast();
   const { selectedProject, setSelectedProject, projects } = useProjects();
   // History for undo/redo
-  const [history, setHistory] = useState([]); // array of boundingBoxes snapshots
-  const [redoStack, setRedoStack] = useState([]);
+  const [_history, setHistory] = useState([]); // array of boundingBoxes snapshots
+  const [_redoStack, setRedoStack] = useState([]);
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
   const deleteButtonRef = useRef(null); // { index, x, y, size } or null
   const [imageLoaded, setImageLoaded] = useState(false);
  
-  const { images, setImages,fetchImagesByProject } = useProjectImages();
-  const storageKey = `imageIndex_${selectedProject?.id || "default"}`;
+  const { images, setImages } = useProjectImages();
+  // const storageKey = `imageIndex_${selectedProject?.id || "default"}`;
  
 // const [currentImageIndex, setCurrentImageIndex] = useState(() => {
 //   const saved = localStorage.getItem(storageKey);
@@ -99,8 +99,8 @@ useEffect(() => {
 
 
   // Sample image - using a placeholder that will work
-  const sampleImageUrl =
-    'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80';
+  // const sampleImageUrl =
+  //   'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80';
 
  const classes = useMemo(() => {
   return selectedProject?.classes.map(cls => ({
@@ -124,7 +124,7 @@ useEffect(() => {
         setSelectedClassId(selected.id);
 
          setDrawMode(true);
-        setEditMode(false);
+        // setEditMode(false);
       }
     }
   };
@@ -186,7 +186,7 @@ const handleSave = async () => {
 
       return true; 
     } else {
-     showError(error.detail);
+     
       return false;
     }
   } catch (err) {
@@ -199,7 +199,7 @@ useEffect(() => {
   setIsEdit(false);
 }, [selectedImage]);
  
-   const handleDelete = async (img) => {
+   const handleDelete = async () => {
       const confirmDelete = confirm("Are you sure you want to delete this image?");
       if (!confirmDelete) return;
   
@@ -604,7 +604,7 @@ useEffect(() => {
   const handleKeyDown = (e) => {
     if (e.key === "Shift" && !e.repeat) {
       setDrawMode(prev => !prev); // 🔥 toggle
-      setEditMode(false);
+      // setEditMode(false);
     }
   };
 
@@ -615,7 +615,7 @@ useEffect(() => {
   };
 }, []);
 
- const labelToBox = (label, imgWidth, imgHeight, classes) => {
+ const labelToBox = (label, imgWidth, imgHeight) => {
   const coords = label.coordinates; //use coordinates directly
 
   const xs = [];
@@ -631,9 +631,9 @@ useEffect(() => {
   const xMax = Math.max(...xs);
   const yMax = Math.max(...ys);
 
-  const cls =
-    classes.find(c => c.id === label.id || c.name === label.name) ||
-    classes[0];
+  // const cls =
+  //   classes.find(c => c.id === label.id || c.name === label.name) ||
+  //   classes[0];
 
   return {
     x: xMin,

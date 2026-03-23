@@ -1,7 +1,7 @@
 import styles from './styles.module.css';
 import ProgressBar from '@/components/ui/progress-bar';
 
-const UserCard = ({ user, project }) => {
+const UserCard = ({ user }) => {
   const { assigned = 0, labeled = 0, name,role } = user;
   const pending = Math.max(0, assigned - labeled);
   const pct = assigned ? Math.round((labeled / assigned) * 100) : 0;

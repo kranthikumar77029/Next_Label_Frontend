@@ -22,6 +22,7 @@ export const ROUTES = {
   REGISTER: "/register",
   PROJECTIMAGES: "/project-images/:selectedProject/:projectId",
   ANALYTICS:"/analytics",
+  // COMPAREMODELS:"/comparemodels"
 }; 
 
 /**
@@ -69,6 +70,10 @@ export const ROUTE_CONFIG = {
     title: "Analytics",
     description: "See the Labeling Insights",
   },
+  // [ROUTES.COMPAREMODELS]:{
+  //   title:"Compare Models",
+  //   description:"Compare Between Two Models"
+  // },
   [ROUTES.TEAM_DASHBOARD]: {
     title: "Team Dashboard",
     description: "Manage team members and assignments per project",

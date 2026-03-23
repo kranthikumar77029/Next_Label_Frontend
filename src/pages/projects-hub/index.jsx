@@ -37,9 +37,9 @@ const ProjectsHub = () => {
     // project_title:''
   });
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('All');
+  // const [filter, setFilter] = useState('All');
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, _setTotalPages] = useState(1);
  
   const { showSuccess, showError } = useToast();
   const stats = [
@@ -149,7 +149,7 @@ const fetchClasses = async (projectId) => {
   }
 };
   //Add Class
-  const handleSubmit = async (e) => {
+  const handleSubmit = async () => {
   // e.preventDefault();
 
   const payload = {

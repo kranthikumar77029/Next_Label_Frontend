@@ -22,7 +22,7 @@ const AutoLabel = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
+  const [_page, setPage] = useState(1);
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState([]);

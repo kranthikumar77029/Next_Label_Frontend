@@ -5,10 +5,10 @@ import { ProjectProvider } from "./context/ProjectContext.jsx";
 import { routes } from "./routes/index.jsx";
 import { ThemeProvider } from "./provideers/themeprovider.jsx";
 import { Toaster } from "sonner";
-
+import { AutoLabelProvider } from "./context/AutoLabelContext.jsx";
 import { ProjectImagesProvider } from "./context/ProjectImagesContext.jsx";
 import { TeamMembersProvider } from "./context/TeamMembers.jsx";
- 
+import { AnnotationImagesProvider } from "./context/AnnotationImagesContext.jsx";
  
 
 /**
@@ -31,7 +31,11 @@ function App() {
           <ThemeProvider>
             <ProjectImagesProvider>
                <TeamMembersProvider>
+                <AnnotationImagesProvider>
+                  <AutoLabelProvider>
                 <AppRoutes />
+                </AutoLabelProvider>
+                </AnnotationImagesProvider>
                </TeamMembersProvider>
             </ProjectImagesProvider>
          </ThemeProvider>
