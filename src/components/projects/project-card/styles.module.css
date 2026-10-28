@@ -1,4 +1,6 @@
 .projectCard {
+  display: grid;
+  grid-template-columns: repeat();
   background: var(--color-background-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);

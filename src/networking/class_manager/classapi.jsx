@@ -1,4 +1,4 @@
-import * as endPoints from '@/networking/class-manager/endpoints';
+import * as endPoints from '@/networking/class_manager/endpoints';
 import { classApi } from '@/services/axios';
 
 export const createClassApi= async (data)=>{

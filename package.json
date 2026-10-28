@@ -12,19 +12,24 @@
   "dependencies": {
     "@flaticon/flaticon-uicons": "^3.3.1",
     "axios": "^1.13.2",
+    "chart.js": "^4.5.1",
     "lucide-react": "^0.554.0",
+    "rc-slider": "^11.1.9",
     "react": "^19.1.1",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.1.1",
     "react-otp-input": "^3.1.1",
     "react-router-dom": "^7.9.5",
-    "recharts": "^3.3.0"
+    "react-toastify": "^11.0.5",
+    "recharts": "^3.8.0",
+    "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
-    "eslint": "^9.36.0",
+    "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",

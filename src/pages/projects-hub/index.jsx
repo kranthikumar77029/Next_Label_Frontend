@@ -6,7 +6,7 @@ import { ProjectCard } from '@/components/projects/project-card';
 import { Modal } from '@/components/common/modal';
 import { Form } from '@/components/common/form';
 import { useToast } from '@/hooks/use-toast';
-import { listClassesApi,createClassApi,updateClassApi,deleteClassApi } from '@/networking/class-manager/classapi';
+import { listClassesApi,createClassApi,updateClassApi,deleteClassApi } from '@/networking/class_manager/classapi';
 import NoDataFound from '@/assets/no-data-found.svg';
 
 import {

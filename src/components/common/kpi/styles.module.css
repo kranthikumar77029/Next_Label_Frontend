@@ -1,7 +1,6 @@
 /* Container holding all KPI boxes in a row */
 .kpiWrapper {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  display: flex;
   gap: 16px;
   width: 100%;
 }
